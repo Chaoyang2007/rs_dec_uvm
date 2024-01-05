@@ -17,11 +17,9 @@ class rs_output_monitor extends uvm_component;
     // Build phase to configure the monitor
     function void build_phase(uvm_phase phase);
         super.build_phase(phase);
-
         // Get the virtual interface configuration
         if (!uvm_config_db#(virtual rs_interface)::get(this, "", "vif", vif))
-            `uvm_fatal(get_full_name(), "vif connect error!")
-
+            `uvm_fatal("rs_output_monitor", "vif connect error!")
         // Create and configure the analysis port
         ap = new("ap", this);
     endfunction // build_phase
@@ -31,6 +29,7 @@ class rs_output_monitor extends uvm_component;
         forever begin
             collect_once(tr);
             ap.write(tr);
+            tr.print_rx("output monitor");
         end
     endtask // main_phase
 
@@ -38,7 +37,6 @@ class rs_output_monitor extends uvm_component;
     task collect_once(ref rs_transaction tr);
         // Wait for the specified condition on the virtual interface
         @(vif.o_mon_cb iff (vif.rstn == 1 && vif.o_mon_cb.rs_ena == 1));
-
         // Create a new transaction and copy data from the virtual interface
         tr = rs_transaction::type_id::create("tr");
         tr.dec_vld   = vif.o_mon_cb.dec_vld;

@@ -11,33 +11,36 @@ class rs_error_case_vseq extends rs_base_vseq;
 
     virtual task body();
         rs_4blocks_seq seq;
+        rs_transaction tr;
 
         // Raise objection if a starting phase is specified
         if (starting_phase != null)
             starting_phase.raise_objection(this);
         
-        // Display start time of the "rs_error_case_vseq" sequence
         $display($time, " sequence \"rs_error_case_vseq\" start");
 
+        #(10 * `CLOCK_PERIOD)
         // Set 'rstn' to 1 after a delay of 10 clock periods
-        #10 * `CLOCK_PERIOD
         uvm_config_db#(bit)::set(null, "uvm_test_top", "rstn", 1);
 
+        #(10 * `CLOCK_PERIOD)
         // Execute 'seq' (rs_4blocks_seq) sequence from rs_base_vseq 20 times
-        #10 * `CLOCK_PERIOD
-        repeat(20) `uvm_do(seq)
+        //repeat(120) `uvm_do_on(tr, p_sequencer.sqr);
+        repeat(20) `uvm_do_on(seq, p_sequencer.sqr);
+        // repeat(20) `uvm_do_with(seq, has_error=='b1);
+        // repeat(20) `uvm_do_on_with(seq, p_sequencer.sqr, {has_error==1;})
 
+        // #(10 * `CLOCK_PERIOD)
         // Set 'rstn' to 0 after a delay of 10 clock periods
-        #10 * `CLOCK_PERIOD
-        uvm_config_db#(bit)::set(null, "uvm_test_top", "rstn", 0);
+        // uvm_config_db#(bit)::set(null, "uvm_test_top", "rstn", 0);
 
-        // Display end time of the "rs_error_case_vseq" sequence
+        #(10 * `CLOCK_PERIOD)
         $display($time, " sequence \"rs_error_case_vseq\" end");
 
         // Drop objection if a starting phase is specified
         if (starting_phase != null)
             starting_phase.drop_objection(this);
-    endtask : body
-endclass : rs_error_case_vseq
+    endtask // body
+endclass // rs_error_case_vseq
 
 `endif // RS_ERROR_CASE_VSEQ__SV

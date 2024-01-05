@@ -6,7 +6,14 @@ class rs_4blocks_seq extends uvm_sequence#(rs_transaction);
     
     rand bit has_error;
 
-    constraint c {has_error inside {0, 1};}
+    constraint c {
+        // soft has_error inside {0, 1};
+        soft has_error dist {0:=10, 1:=90};
+    }
+
+    function new(string name="rs_4blocks_seq");
+        super.new(name);
+    endfunction // new()
 
     virtual task body();
         rs_transaction tr, drv_tr;
@@ -15,115 +22,109 @@ class rs_4blocks_seq extends uvm_sequence#(rs_transaction);
         integer      count  = 0;
 
         // 1st block
+        $display($time, " 4blocks_seq 1st block");
         forever begin
-            tr = new();
+            tr = new("tr");
+            start_item(tr);
             assert(tr.randomize());
             if (tr.rx_vld) begin
-                if (count < 2 * `M) begin
+                if (count < 2 * `SYMBOLS_IN_BLOCK) begin
                     buffer = {buffer[1487:0],tr.rx_data}; // all buffered
-                    uvm_do_with(drv_tr, drv_tr = tr;);
                     count  = count + 1;
                 end else begin
                     tr.rx_data[63:60] = 0;
                     buffer = {buffer[1535:0],tr.rx_data[63:48]}; // 2B syncbit buffered
-                    parity = rs_utils::calculate_par(buffer,has_error);
+                    rs_utils::calculate_par(buffer,has_error,parity);
                     tr.rx_data[47:16] = parity;
-                    uvm_do_with(drv_tr, drv_tr = tr;);
                     buffer = {buffer[1535:0],tr.rx_data[15:0]}; // 2B next buffered
                     count  = 0;
+                    finish_item(tr);
                     break;
                 end
-            end else begin
-                uvm_do_with(drv_tr, drv_tr.rx_vld==0;);
             end
+            finish_item(tr);
         end
 
         // 2nd block
+        $display($time, " 4blocks_seq 2nd block");
         forever begin
-            tr = new();
+            tr = new("tr");
+            start_item(tr);
             assert(tr.randomize());
             if (tr.rx_vld) begin
-                if (count < 2 * `M - 1) begin
+                if (count < 2 * `SYMBOLS_IN_BLOCK - 1) begin
                     buffer = {buffer[1487:0],tr.rx_data}; // all buffered
-                    uvm_do_with(drv_tr, drv_tr = tr;);
                     count  = count + 1;
-                end else if (count == 2 * `M - 1) begin
+                end else if (count == 2 * `SYMBOLS_IN_BLOCK - 1) begin
                     tr.rx_data[15:12] = 0;
                     buffer = {buffer[1487:0],tr.rx_data}; // all buffered with 2B syncbit
-                    parity = rs_utils::calculate_par(buffer,has_error);
-                    uvm_do_with(drv_tr, drv_tr = tr;);
+                    rs_utils::calculate_par(buffer,has_error,parity);
                     count  = count + 1;
                 end else begin
                     tr.rx_data[63:32] = parity;
-                    uvm_do_with(drv_tr, drv_tr = tr;);
                     buffer = {buffer[1519:0],tr.rx_data[31:0]}; // 4B next buffered
                     count  = 0;
+                    finish_item(tr);
                     break;
                 end
-            end else begin
-                uvm_do_with(drv_tr, drv_tr.rx_vld==0;);
             end
+            finish_item(tr);
         end
 
         // 3rd block
+        $display($time, " 4blocks_seq 3rd block");
         forever begin
-            tr = new();
+            tr = new("tr");
+            start_item(tr);
             assert(tr.randomize());
             if (tr.rx_vld) begin
-                if (count < 2 * `M - 1) begin
+                if (count < 2 * `SYMBOLS_IN_BLOCK - 1) begin
                     buffer = {buffer[1487:0],tr.rx_data}; // all buffered
-                    uvm_do_with(drv_tr, drv_tr = tr;);
                     count  = count + 1;
-                end else if (count == 2 * `M - 1) begin
+                end else if (count == 2 * `SYMBOLS_IN_BLOCK - 1) begin
                     tr.rx_data[31:28] = 0;
                     buffer = {buffer[1503:0],tr.rx_data[63:16]}; // 6B buffered with 2B syncbit
-                    parity = rs_utils::calculate_par(buffer,has_error);
+                    rs_utils::calculate_par(buffer,has_error,parity);
                     tr.rx_data[15:0] = parity[31:16];
-                    uvm_do_with(drv_tr, drv_tr = tr;);
                     count  = count + 1;
                 end else begin
                     tr.rx_data[63:48] = parity[15:0];
-                    uvm_do_with(drv_tr, drv_tr = tr;);
                     buffer = {buffer[1503:0],tr.rx_data[63:16]}; // 6B next buffered
                     count  = 0;
+                    finish_item(tr);
                     break;
                 end
-            end else begin
-                uvm_do_with(drv_tr, drv_tr.rx_vld==0;);
             end
+            finish_item(tr);
         end
 
         // 4th block
+        $display($time, " 4blocks_seq 4th block");
         forever begin
-            tr = new();
+            tr = new("tr");
+            start_item(tr);
             assert(tr.randomize());
             if (tr.rx_vld) begin
-                if (count < 2 * `M - 1) begin
+                if (count < 2 * `SYMBOLS_IN_BLOCK - 1) begin
                     buffer = {buffer[1487:0],tr.rx_data}; // all buffered
-                    uvm_do_with(drv_tr, drv_tr = tr;);
                     count  = count + 1;
                 end else begin
                     tr.rx_data[47:44] = 0;
                     buffer = {buffer[1519:0],tr.rx_data[63:32]}; // 4B buffered with 2B syncbit
-                    parity = rs_utils::calculate_par(buffer,has_error);
+                    rs_utils::calculate_par(buffer,has_error,parity);
                     tr.rx_data[32:0] = parity;
-                    uvm_do_with(drv_tr, drv_tr = tr;);
                     count  = 0;
+                    finish_item(tr);
                     break;
                 end
-            end else begin
-                uvm_do_with(drv_tr, drv_tr.rx_vld==0;);
             end
+            finish_item(tr);
         end
 
         // ends with a tr with rx_vld=0
-        uvm_do_with(drv_tr, drv_tr.rx_vld==0;);
+        `uvm_do_with(tr, {tr.rx_vld==0;});
     endtask // body
 
-    function new(string name="rs_4blocks_seq");
-        super.new(name)
-        has_error = 1;
-    endfunction //new()
 endclass //rs_4blocks_seq extends uvm_sequence#(rs_transaction)
 
-`endif RS_4BLOCKs_SEQ__SV
+`endif // RS_4BLOCKs_SEQ__SV

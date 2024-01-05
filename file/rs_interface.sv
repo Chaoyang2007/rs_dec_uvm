@@ -6,11 +6,11 @@ interface rs_interface(input clk, rstn);
 
     // Signals for received data
     logic               rx_vld;
-    logic [`WIDTH-1:0]  rx_data;
+    logic [`DATA_WIDTH-1:0]  rx_data;
 
     // Signals for decoded data
     logic               dec_vld;
-    logic [`WIDTH-1:0]  dec_data;
+    logic [`DATA_WIDTH-1:0]  dec_data;
     logic               dec_isos;
     logic               RDE_ERROR;
 

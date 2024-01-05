@@ -7,7 +7,6 @@ class rs_input_monitor extends uvm_component;
     // Declare the virtual interface, analysis port, and transaction
     virtual rs_interface                vif;
     uvm_analysis_port#(rs_transaction)  ap;
-    rs_transaction                      tr;
 
     // Constructor
     function new(string name="rs_input_monitor", uvm_component parent);
@@ -17,19 +16,19 @@ class rs_input_monitor extends uvm_component;
     // Build phase to configure the monitor
     function void build_phase(uvm_phase phase);
         super.build_phase(phase);
-
         // Get the virtual interface configuration
         if (!uvm_config_db#(virtual rs_interface)::get(this, "", "vif", vif))
-            `uvm_fatal(get_full_name(), "vif connect error!")
-
+            `uvm_fatal("rs_input_monitor", "vif connect error!")
         // Create and configure the analysis port
         ap = new("ap", this);
     endfunction // build_phase
 
     // Main monitoring task
     task main_phase(uvm_phase phase);
+        rs_transaction  tr;
         forever begin
             collect_once(tr);
+            tr.print_rx("input monitor");
             ap.write(tr);
         end
     endtask // main_phase

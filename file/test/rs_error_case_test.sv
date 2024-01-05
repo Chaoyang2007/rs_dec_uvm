@@ -2,7 +2,7 @@
 `ifndef RS_ERROR_CASE_TEST__SV
 `define RS_ERROR_CASE_TEST__SV
 
-class rs_error_case_test extends afifo_base_test;
+class rs_error_case_test extends rs_base_test;
     `uvm_component_utils(rs_error_case_test)
 
     // Constructor

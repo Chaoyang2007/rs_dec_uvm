@@ -1,104 +1,119 @@
 `ifndef RS_UTILS__SV
 `define RS_UTILS__SV
 
+class error_location;
+    rand bit has_error;
+    rand int num;
+    rand int loc1, loc2;
+
+    constraint c {
+        has_error inside {0, 1};
+        (has_error == 0) -> {num == 0;}
+        (has_error == 1) -> {num dist {1:=30, 2:=60};}
+        loc1 inside {[0:`FEC_BLOCK_SIZE-1]};
+        loc2 inside {[0:`FEC_BLOCK_SIZE-1]};
+        loc1 != loc2;
+    }
+
+    function new(int has_error = 1);
+        this.has_error = has_error;
+    endfunction // new()
+endclass // error_location
+
 class rs_utils;
     // Constructor
     function new();
     endfunction //new()
 
     // Function to calculate parity
-    function bit [31:0] calculate_par(bit[1551:0] data, bit has_error=0);
+    static function void calculate_par(bit[1551:0] data, bit has_error=0, ref bit [31:0] parity);
+        bit [31:0] parity_temp;
         // Introduce error(s)
         error_location eloc;
         bit [7:0] edata1, edata2;
+        bit [7:0] G0 = 64, G1 = 120, G2 = 54, G3 = 15;
+        bit [7:0] R0 = 0, R1 = 0, R2 = 0, R3 = 0;
+        bit [7:0] Rd, G0xRd, G1xRd, G2xRd, G3xRd;
 
         if (has_error) begin
             eloc = new();
             assert(eloc.randomize());
             edata1 = data[1551 - 8 * eloc.loc1 -: 8];
-            data[1551 - 8 * eloc.loc1 -: 8] = 0;
+            data[1551 - 8 * eloc.loc1 -: 8] = 8'b0;
 
             if (eloc.num == 2) begin
                 edata2 = data[1551 - 8 * eloc.loc2 -: 8];
-                data[1551 - 8 * eloc.loc2 -: 8] = 0;
+                data[1551 - 8 * eloc.loc2 -: 8] = 8'b0;
             end
 
             if (eloc.num == 1) begin
-                `uvm_info(get_full_name(), $sformatf("1 error, (loc, val)=(%d, %h).", eloc.loc1, edata1), UVM_LOW);
+                `uvm_info("calculating parities", $sformatf("1 error, (loc, val)=(%0d, %0h).", eloc.loc1, edata1), UVM_MEDIUM);
             end else begin
-                `uvm_info(get_full_name(), $sformatf("2 errors, (loc1, val1)=(%d, %h), (loc2, val2)=(%d, %h).", eloc.loc1, edata1, eloc.loc2, edata2), UVM_LOW);
+                `uvm_info("calculating parities", $sformatf("2 errors, (loc1, val1)=(%0d, %0h), (loc2, val2)=(%0d, %0h).", eloc.loc1, edata1, eloc.loc2, edata2), UVM_MEDIUM);
             end
         end else begin
-            `uvm_info(get_full_name(), $sformatf("0 error, (loc, val)=(x, x)."), UVM_LOW);
+            `uvm_info("calculating parities", $sformatf("0 error, (loc, val)=(x, x)."), UVM_MEDIUM);
         end
 
         // Calculate parities
-        int [7:0] G0 = 64;
-        int [7:0] G1 = 120;
-        int [7:0] G2 = 54;
-        int [7:0] G3 = 15;
-        int [7:0] R0 = 0;
-        int [7:0] R1 = 0;
-        int [7:0] R2 = 0;
-        int [7:0] R3 = 0;
-        int [7:0] Rd, G0xRd, G1xRd, G2xRd, G3xRd;
-
-        for (integer i = 0; i < `N; i++) begin
+        for (integer i = 0; i < `FEC_BLOCK_SIZE; i++) begin
             Rd = R3 ^ data[1551 - 8 * i -: 8];
-            G0xRd = gf2m8_multi(Rd, G0);
-            G1xRd = gf2m8_multi(Rd, G1);
-            G2xRd = gf2m8_multi(Rd, G2);
-            G3xRd = gf2m8_multi(Rd, G3);
+            gf2m8_multi(Rd, G0, G0xRd);
+            gf2m8_multi(Rd, G1, G1xRd);
+            gf2m8_multi(Rd, G2, G2xRd);
+            gf2m8_multi(Rd, G3, G3xRd);
             R3 = G3xRd ^ R2;
             R2 = G2xRd ^ R1;
             R1 = G1xRd ^ R0;
             R0 = G0xRd;
-            calculate_par = {calculate_par[23:0], R3};
+            parity_temp = {parity_temp[23:0], R3};
         end
+        `uvm_info("calculating parities", $sformatf("parity bytes %0h.", parity_temp), UVM_MEDIUM);
+        parity = parity_temp;
     endfunction // calculate_par
 
     // Function to multiply two 8-bit numbers in GF(2^8)
-    function bit [7:0] gf2m8_multi(bit[7:0] x, bit[7:0] y);
-        gf2m8_multi[0] = ^{ y[0] & x[0], 
+    static function void gf2m8_multi(bit[7:0] x, bit[7:0] y, ref bit [7:0] z);
+        z[0] = ^{ y[0] & x[0], 
                         y[1] & x[7], y[2] & x[6], y[3] & x[5], y[4] & x[4], y[5] & x[3], y[6] & x[2], y[7] & x[1], //1-7
                         y[5] & x[7], y[6] & x[6], y[7] & x[5], //5-7
                         y[6] & x[7], y[7] & x[6], //6-7
                         y[7] & x[7] }; //7
-        gf2m8_multi[1] = ^{ y[0] & x[1], y[1] & x[0], 
+        z[1] = ^{ y[0] & x[1], y[1] & x[0], 
                         y[2] & x[7], y[3] & x[6], y[4] & x[5], y[5] & x[4], y[6] & x[3], y[7] & x[2], //2-7
                         y[6] & x[7], y[7] & x[6], //6-7
                         y[7] & x[7] }; //7
-        gf2m8_multi[2] = ^{ y[0] & x[2], y[1] & x[1], y[2] & x[0], 
+        z[2] = ^{ y[0] & x[2], y[1] & x[1], y[2] & x[0], 
                         y[1] & x[7], y[2] & x[6], y[3] & x[5], y[4] & x[4], y[5] & x[3], y[6] & x[2], y[7] & x[1], //1-7
                         y[3] & x[7], y[4] & x[6], y[5] & x[5], y[6] & x[4], y[7] & x[3], //3-7
                         y[5] & x[7], y[6] & x[6], y[7] & x[5], //5-7
                         y[6] & x[7], y[7] & x[6] }; //6-7
-        gf2m8_multi[3] = ^{ y[0] & x[3], y[1] & x[2], y[2] & x[1], y[3] & x[0], 
+        z[3] = ^{ y[0] & x[3], y[1] & x[2], y[2] & x[1], y[3] & x[0], 
                         y[1] & x[7], y[2] & x[6], y[3] & x[5], y[4] & x[4], y[5] & x[3], y[6] & x[2], y[7] & x[1], //1-7
                         y[2] & x[7], y[3] & x[6], y[4] & x[5], y[5] & x[4], y[6] & x[3], y[7] & x[2], //2-7
                         y[4] & x[7], y[5] & x[6], y[6] & x[5], y[7] & x[4], //4-7
                         y[5] & x[7], y[6] & x[6], y[7] & x[5] }; //5-7
-        gf2m8_multi[4] = ^{ y[0] & x[4], y[1] & x[3], y[2] & x[2], y[3] & x[1], y[4] & x[0], 
+        z[4] = ^{ y[0] & x[4], y[1] & x[3], y[2] & x[2], y[3] & x[1], y[4] & x[0], 
                         y[1] & x[7], y[2] & x[6], y[3] & x[5], y[4] & x[4], y[5] & x[3], y[6] & x[2], y[7] & x[1], //1-7
                         y[2] & x[7], y[3] & x[6], y[4] & x[5], y[5] & x[4], y[6] & x[3], y[7] & x[2], //2-7
                         y[3] & x[7], y[4] & x[6], y[5] & x[5], y[6] & x[4], y[7] & x[3], //3-7
                         y[7] & x[7] }; //7
-        gf2m8_multi[5] = ^{ y[0] & x[5], y[1] & x[4], y[2] & x[3], y[3] & x[2], y[4] & x[1], y[5] & x[0], 
+        z[5] = ^{ y[0] & x[5], y[1] & x[4], y[2] & x[3], y[3] & x[2], y[4] & x[1], y[5] & x[0], 
                         y[2] & x[7], y[3] & x[6], y[4] & x[5], y[5] & x[4], y[6] & x[3], y[7] & x[2], //2-7
                         y[3] & x[7], y[4] & x[6], y[5] & x[5], y[6] & x[4], y[7] & x[3], //3-7
                         y[4] & x[7], y[5] & x[6], y[6] & x[5], y[7] & x[4] }; //4-7
-        gf2m8_multi[6] = ^{ y[0] & x[6], y[1] & x[5], y[2] & x[4], y[3] & x[3], y[4] & x[2], y[5] & x[1], y[6] & x[0], 
+        z[6] = ^{ y[0] & x[6], y[1] & x[5], y[2] & x[4], y[3] & x[3], y[4] & x[2], y[5] & x[1], y[6] & x[0], 
                         y[3] & x[7], y[4] & x[6], y[5] & x[5], y[6] & x[4], y[7] & x[3], //3-7
                         y[4] & x[7], y[5] & x[6], y[6] & x[5], y[7] & x[4], //4-7
                         y[5] & x[7], y[6] & x[6], y[7] & x[5] }; //5-7
-        gf2m8_multi[7] = ^{ y[0] & x[7], y[1] & x[6], y[2] & x[5], y[3] & x[4], y[4] & x[3], y[5] & x[2], y[6] & x[1], y[7] & x[0], 
+        z[7] = ^{ y[0] & x[7], y[1] & x[6], y[2] & x[5], y[3] & x[4], y[4] & x[3], y[5] & x[2], y[6] & x[1], y[7] & x[0], 
                         y[4] & x[7], y[5] & x[6], y[6] & x[5], y[7] & x[4], //4-7
                         y[5] & x[7], y[6] & x[6], y[7] & x[5], //5-7
                         y[6] & x[7], y[7] & x[6] }; //6-7
     endfunction // gf2m8_multi
 
     // Function to divide two 8-bit numbers in GF(2^8)
-    function bit [7:0] gf2m8_divid(bit[7:0] dividend, bit[7:0] divisor)
+    static function void gf2m8_divid(bit[7:0] dividend, bit[7:0] divisor, ref bit [7:0] quotient);
         bit [7:0] inv;
         case (divisor)
             8'd1:    inv = 8'd1;  // 2^255 2^0
@@ -358,27 +373,8 @@ class rs_utils;
             8'd142:  inv = 8'd2;  // 2^254
             default: inv = 8'd0;
         endcase
-        gf2m8_divid = gf2m8_multi(dividend, inv);
+        gf2m8_multi(dividend, inv, quotient);
     endfunction // gf2m8_divid
 endclass //rs_utils
 
-class error_location;
-    rand bit has_error;
-    rand int num;
-    rand int loc1, loc2;
-
-    constraint c {
-        has_error inside {0, 1};
-        (has_error == 0) -> {num == 0;};
-        (has_error == 1) -> {num dist {1:=30, 2:=60};};
-        loc1 inside {[0:`N-1]};
-        loc2 inside {[0:`N-1]};
-        loc1 != loc2;
-    }
-
-    function new(int has_error = 1);
-        this.has_error = has_error;
-    endfunction // new()
-endclass // error_location
-
-`endif RS_UTILS__SV
+`endif // RS_UTILS__SV

@@ -15,23 +15,20 @@ class rs_driver extends uvm_driver #(rs_transaction);
     // Build phase to configure components
     function void build_phase(uvm_phase phase);
         super.build_phase(phase);
+        
         if (!uvm_config_db#(virtual rs_interface)::get(this, "", "vif", vif))
-            `uvm_fatal(get_full_name(), "vif connect error!")
+            `uvm_fatal("rs_driver", "vif connect error!")
     endfunction // build_phase
 
     // Reset phase to handle reset conditions
     task reset_phase(uvm_phase phase);
         super.reset_phase(phase);
+        
         phase.raise_objection(this);
         wait(vif.rstn == 'b0);
-            `uvm_info(get_full_name(), "reset phase start", UVM_MEDIUM);
-            vif.rs_ena <= `b0;
-            vif.rx_vld <= 'b0;
-        wait(vif.rstn == 'b1);
-            `uvm_info(get_full_name(), "write reset phase end", UVM_MEDIUM);
-            @(vif.i_drv_cb);
-            vif.rs_ena <= `b0;
-            vif.rx_vld <= 'b0;
+        `uvm_info("rs_driver", "rs_driver reset phase", UVM_LOW);
+        vif.rs_ena <= 'b0;
+        vif.rx_vld <= 'b0;
         phase.drop_objection(this);
     endtask // reset_phase
 
@@ -41,6 +38,7 @@ class rs_driver extends uvm_driver #(rs_transaction);
             forever begin
                 seq_item_port.get_next_item(req);
                 drive_once(req);
+                req.print("driver drive_once");
                 seq_item_port.item_done();
             end
 
