@@ -38,7 +38,7 @@ class rs_driver extends uvm_driver #(rs_transaction);
             forever begin
                 seq_item_port.get_next_item(req);
                 drive_once(req);
-                req.print("driver drive_once");
+                // req.print_rx("driver drive_once");
                 seq_item_port.item_done();
             end
 

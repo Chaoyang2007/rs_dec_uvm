@@ -45,7 +45,7 @@ class rs_scoreboard extends uvm_component;
         forever begin
             exp_port.get(get_expect);
             if (get_expect.dec_vld == 1) begin
-                get_expect.print_dec("scoreboard get_expect");
+                // get_expect.print_dec("scoreboard get_expect");
                 expect_queue.push_back(get_expect);
                 `uvm_info("rs_scoreboard", $sformatf("ref-model: %0d-th block, %0d-th half-symbol (data, isos)=(%0h, %0b).", (exp_cnt/24+1), (exp_cnt%24+1), get_expect.dec_data, get_expect.dec_isos), UVM_MEDIUM);
                 exp_cnt = exp_cnt + 1;
@@ -61,7 +61,7 @@ class rs_scoreboard extends uvm_component;
         forever begin
             act_port.get(get_actual);
             if (get_actual.dec_vld == 1) begin
-                get_actual.print_dec("scoreboard get_actual");
+                // get_actual.print_dec("scoreboard get_actual");
                 if (expect_queue.size()) begin
                     temp_data = expect_queue.pop_front();
                     if (exp_eq_act(get_actual, temp_data)) begin
