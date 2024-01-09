@@ -15,6 +15,8 @@
 
 ../file/test/rs_vsqr.sv
 ../file/test/rs_4blocks_seq.sv
+../file/test/rs_4blocks_tb_seq.sv
+../file/test/rs_4blocks_tr_seq.sv
 ../file/test/rs_base_vseq.sv
 ../file/test/rs_error_case_vseq.sv
 ../file/test/rs_base_test.sv
