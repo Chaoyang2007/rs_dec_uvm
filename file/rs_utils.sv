@@ -1,63 +1,52 @@
 `ifndef RS_UTILS__SV
 `define RS_UTILS__SV
 
-class error_location;
-    rand bit has_error;
+class rand_errors;
     rand int num;
-    rand int loc1, loc2;
+    rand int loc1_dw, loc2_dw;
+    rand int loc1_b,  loc2_b;
 
     constraint c {
-        has_error inside {0, 1};
-        (has_error == 0) -> {num == 0;}
-        (has_error == 1) -> {num dist {1:=30, 2:=60};}
-        loc1 inside {[0:`FEC_BLOCK_SIZE-1]};
-        loc2 inside {[0:`FEC_BLOCK_SIZE-1]};
-        loc1 != loc2;
+        soft num dist {0:=10, 1:=30, 2:=60};
+        loc1_dw inside {[0:2*`SYMBOLS_IN_BLOCK-2]};
+        loc2_dw inside {[0:2*`SYMBOLS_IN_BLOCK-2]};
+        loc1_b  inside {[0:7]};
+        loc2_b  inside {[0:7]};
+        (loc1_dw == loc2_dw) -> {loc1_b != loc2_b;}
     }
 
-    function new(int has_error = 1);
-        this.has_error = has_error;
+    function new();
     endfunction // new()
-endclass // error_location
+endclass // rand_errors
 
 class rs_utils;
     // Constructor
     function new();
     endfunction //new()
 
+    // Introduce/Inject errors into drv_data
+    static function void errors_inj(ref bit [8`B:0] data, rand_errors re, integer i);
+        if (re.num != 0) begin
+            if (i == re.loc1_dw) begin
+                `uvm_info("errors_inj", $sformatf("1st error value is %0h.", data[(8-re.loc1_b)`B -:8]), UVM_MEDIUM);
+                data[(8-re.loc1_b)`B -:8] = 8'b0;
+            end
+            if (i == re.loc2_dw) begin
+                `uvm_info("errors_inj", $sformatf("2nd error value is %0h.", data[(8-re.loc2_b)`B -:8]), UVM_MEDIUM);
+                data[(8-re.loc2_b)`B -:8] = 8'b0;
+            end
+        end
+    endfunction // errors_inj
+
     // Function to calculate parity
-    static function void calculate_par(bit[1551:0] data, bit has_error=0, ref bit [31:0] parity);
-        bit [31:0] parity_temp;
-        // Introduce error(s)
-        error_location eloc;
-        bit [7:0] edata1, edata2;
+    static function void parity_cal(bit [194`B:0] data, ref bit [4`B:0] parity);
         bit [7:0] G0 = 64, G1 = 120, G2 = 54, G3 = 15;
         bit [7:0] R0 = 0, R1 = 0, R2 = 0, R3 = 0;
         bit [7:0] Rd, G0xRd, G1xRd, G2xRd, G3xRd;
 
-        if (has_error) begin
-            eloc = new();
-            assert(eloc.randomize());
-            edata1 = data[1551 - 8 * eloc.loc1 -: 8];
-            data[1551 - 8 * eloc.loc1 -: 8] = 8'b0;
-
-            if (eloc.num == 2) begin
-                edata2 = data[1551 - 8 * eloc.loc2 -: 8];
-                data[1551 - 8 * eloc.loc2 -: 8] = 8'b0;
-            end
-
-            if (eloc.num == 1) begin
-                `uvm_info("calculating parities", $sformatf("1 error, (loc, val)=(%0d, %0h).", eloc.loc1, edata1), UVM_MEDIUM);
-            end else begin
-                `uvm_info("calculating parities", $sformatf("2 errors, (loc1, val1)=(%0d, %0h), (loc2, val2)=(%0d, %0h).", eloc.loc1, edata1, eloc.loc2, edata2), UVM_MEDIUM);
-            end
-        end else begin
-            `uvm_info("calculating parities", $sformatf("0 error, (loc, val)=(x, x)."), UVM_MEDIUM);
-        end
-
-        // Calculate parities
-        for (integer i = 0; i < `FEC_BLOCK_SIZE; i++) begin
-            Rd = R3 ^ data[1551 - 8 * i -: 8];
+        // Calculate parity
+        for (integer i = 0; i < `DATA_SYNC_SIZE; i++) begin
+            Rd = R3 ^ data[(194-i)`B -: 8];
             gf2m8_multi(Rd, G0, G0xRd);
             gf2m8_multi(Rd, G1, G1xRd);
             gf2m8_multi(Rd, G2, G2xRd);
@@ -66,11 +55,11 @@ class rs_utils;
             R2 = G2xRd ^ R1;
             R1 = G1xRd ^ R0;
             R0 = G0xRd;
-            parity_temp = {parity_temp[23:0], R3};
         end
-        `uvm_info("calculating parities", $sformatf("parity bytes %0h.", parity_temp), UVM_MEDIUM);
-        parity = parity_temp;
-    endfunction // calculate_par
+        parity = {R3, R2, R1, R0};
+        `uvm_info("parity_cal", $sformatf("parity = (%0d, %0d, %0d, %0d).", R3, R2, R1, R0), UVM_MEDIUM);
+        `uvm_info("parity_cal", $sformatf("parity = (%0h, %0h, %0h, %0h).", R3, R2, R1, R0), UVM_MEDIUM);
+    endfunction // parity_cal
 
     // Function to multiply two 8-bit numbers in GF(2^8)
     static function void gf2m8_multi(bit[7:0] x, bit[7:0] y, ref bit [7:0] z);

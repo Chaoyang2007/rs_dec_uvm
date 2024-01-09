@@ -26,7 +26,7 @@ class rs_driver extends uvm_driver #(rs_transaction);
         
         phase.raise_objection(this);
         wait(vif.rstn == 'b0);
-        `uvm_info("rs_driver", "rs_driver reset phase", UVM_LOW);
+        `uvm_info("rs_driver", "driver reset, rs_ena and rx_vld deassert!", UVM_LOW);
         vif.rs_ena <= 'b0;
         vif.rx_vld <= 'b0;
         phase.drop_objection(this);

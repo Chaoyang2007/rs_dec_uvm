@@ -14,3 +14,5 @@
 `define ERROR_CORRECTION_ABILITY 2 // error correction ability
 `define SYMBOLS_IN_BLOCK 12 // number of symbols in a block, 128b (16B) per symbol
 `define CLOCK_PERIOD 2 // clock period
+
+`define B *8-1

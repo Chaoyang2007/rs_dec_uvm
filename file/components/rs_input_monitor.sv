@@ -28,7 +28,7 @@ class rs_input_monitor extends uvm_component;
         rs_transaction  tr;
         forever begin
             collect_once(tr);
-            tr.print_rx("input monitor");
+            // tr.print_rx("input monitor");
             ap.write(tr);
         end
     endtask // main_phase

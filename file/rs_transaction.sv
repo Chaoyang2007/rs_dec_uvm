@@ -41,14 +41,14 @@ class rs_transaction extends uvm_sequence_item;
     endfunction // new()
 
     function void print_rx(string prefix="");
-        $display($time, " %s tr.rx : (vld, data) = (%b, %h)", prefix, rx_vld, rx_data);
+        $display($time, " [%s] tr.rx : (vld, data) = (%b, %h)", prefix, rx_vld, rx_data);
     endfunction // print_rx
     function void print_dec(string prefix="");
-        $display($time, " %s tr.dec: (vld, data, isos, rde) = (%b, %h, %b, %b)", prefix, dec_vld, dec_data, dec_isos, RDE_ERROR);
+        $display($time, " [%s] tr.dec: (vld, data, isos, rde) = (%b, %h, %b, %b)", prefix, dec_vld, dec_data, dec_isos, RDE_ERROR);
     endfunction // print_dec
     function void print(string prefix="");
-        $display($time, " %s tr.rx : (vld, data) = (%b, %h)", prefix, rx_vld, rx_data);
-        $display($time, " %s tr.dec: (vld, data, isos, rde) = (%b, %h, %b, %b)", prefix, dec_vld, dec_data, dec_isos, RDE_ERROR);
+        $display($time, " [%s] tr.rx : (vld, data) = (%b, %h)", prefix, rx_vld, rx_data);
+        $display($time, " [%s] tr.dec: (vld, data, isos, rde) = (%b, %h, %b, %b)", prefix, dec_vld, dec_data, dec_isos, RDE_ERROR);
     endfunction // print
 endclass // rs_transaction
 

@@ -25,7 +25,7 @@ class rs_scoreboard extends uvm_component;
         super.reset_phase(phase);
         phase.raise_objection(this);
         expect_queue.delete();
-        `uvm_info("rs_scoreboard", $sformatf("rs_scoreboard reset, expected queue is deleted"), UVM_MEDIUM);
+        `uvm_info("rs_scoreboard", $sformatf("scoreboard reset, expected queue is deleted!"), UVM_MEDIUM);
         phase.drop_objection(this);
     endtask // reset_phase
 

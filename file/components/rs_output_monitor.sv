@@ -28,8 +28,8 @@ class rs_output_monitor extends uvm_component;
     task main_phase(uvm_phase phase);
         forever begin
             collect_once(tr);
+            // tr.print_rx("output monitor");
             ap.write(tr);
-            tr.print_rx("output monitor");
         end
     endtask // main_phase
 

@@ -236,7 +236,7 @@ module s3_csee(
         end else if(!rs_ena) begin
             rsdec_fail <= `D 'd0;
         end else if(csee_ena | csee_cycle | csee_done_1t) begin
-            rsdec_fail <= `D (counter_err > 'd2);
+            rsdec_fail <= `D ((csee_done_1t & counter_err == 'd0) | counter_err > 'd2);
         end else begin
             rsdec_fail <= `D rsdec_fail;
         end

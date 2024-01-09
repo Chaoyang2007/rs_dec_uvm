@@ -10,7 +10,8 @@ class rs_error_case_vseq extends rs_base_vseq;
     endfunction // new
 
     virtual task body();
-        rs_4blocks_seq seq;
+        rs_4blocks_tb_seq tb_seq;
+        rs_4blocks_rd_seq rd_seq;
         rs_transaction tr;
 
         // Raise objection if a starting phase is specified
@@ -26,15 +27,14 @@ class rs_error_case_vseq extends rs_base_vseq;
         #(10 * `CLOCK_PERIOD)
         // Execute 'seq' (rs_4blocks_seq) sequence from rs_base_vseq 20 times
         //repeat(120) `uvm_do_on(tr, p_sequencer.sqr);
-        repeat(20) `uvm_do_on(seq, p_sequencer.sqr);
-        // repeat(20) `uvm_do_with(seq, has_error=='b1);
-        // repeat(20) `uvm_do_on_with(seq, p_sequencer.sqr, {has_error==1;})
+        repeat(2) `uvm_do_on(tb_seq, p_sequencer.sqr);
+        repeat(6) `uvm_do_on(rd_seq, p_sequencer.sqr);
 
         // #(10 * `CLOCK_PERIOD)
         // Set 'rstn' to 0 after a delay of 10 clock periods
         // uvm_config_db#(bit)::set(null, "uvm_test_top", "rstn", 0);
 
-        #(10 * `CLOCK_PERIOD)
+        #(32 * `CLOCK_PERIOD)
         $display($time, " sequence \"rs_error_case_vseq\" end");
 
         // Drop objection if a starting phase is specified

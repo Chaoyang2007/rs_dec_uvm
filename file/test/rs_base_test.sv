@@ -34,9 +34,9 @@ class rs_base_test extends uvm_test;
         server  = get_report_server();
         err_num = server.get_severity_count(UVM_ERROR);
         if (err_num != 0) begin
-            $display($time, "TEST CASE FAILED");
+            $display($time, " TEST CASE FAILED");
         end else begin
-            $display($time, "TEST CASE PASSED");
+            $display($time, " TEST CASE PASSED");
         end
     endfunction // report_phase
 
