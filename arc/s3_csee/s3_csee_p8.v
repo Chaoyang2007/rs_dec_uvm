@@ -147,9 +147,9 @@ module s3_csee(
         end
     end
 
-    assign mux_lambda1  = csee_init ? rs_lambda1 : (csee_keep ? l1_multi_a1_p8 : 'h00);
-    assign mux_lambda2  = csee_init ? rs_lambda2 : (csee_keep ? l2_multi_a2_p8 : 'h00);
-    assign mux_omega1   = csee_init ? rs_omega1  : (csee_keep ? o1_multi_a1_p8 : 'h00);
+    assign mux_lambda1  = csee_init ? rs_lambda1 : csee_keep ? l1_multi_a1_p8 : 'h00;
+    assign mux_lambda2  = csee_init ? rs_lambda2 : csee_keep ? l2_multi_a2_p8 : 'h00;
+    assign mux_omega1   = csee_init ? rs_omega1  : csee_keep ? o1_multi_a1_p8 : 'h00;
 
     assign mux_alpha1_0 = csee_init ? ALPHA58   : ALPHA1 ;
     assign mux_alpha1_1 = csee_init ? ALPHA59   : ALPHA2 ;

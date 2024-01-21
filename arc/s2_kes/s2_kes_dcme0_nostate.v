@@ -4,7 +4,7 @@
 // 
 // Create Date: 2023/06/25 22:51:57
 // Design Name: 
-// Module Name: s2_kes_dcme0
+// Module Name: s2_kes_dcme0_nostate
 // Project Name: 
 // Desription: 5 cycles, the naive dcme, refer to medc in matlab
 // no dcme0_state, done when deg_R<t
@@ -22,7 +22,7 @@
 `define D #0.2
 `endif
 
-module s2_kes_dcme0(
+module s2_kes_dcme0_nostate(
     input wire       clk,
     input wire       rstn,
     input wire       kes_ena,

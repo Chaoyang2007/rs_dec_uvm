@@ -37,7 +37,6 @@ module s3_cseeh(
     output wire [11:0] rs_error_sync,
     output reg         rs_decode_fail
 );
-
     localparam ALPHA1 = 8'd2, ALPHA2 = 8'd4, ALPHA3 = 8'd8, ALPHA4 = 8'd16, ALPHA5 = 8'd32, ALPHA6 = 8'd64, ALPHA7 = 8'd128, ALPHA8 = 8'd29;
     localparam /*ALPHA2  = 8'd4, ALPHA4  = 8'd16, ALPHA6  = 8'd64, ALPHA8  = 8'd29,*/ ALPHA10 = 8'd116, ALPHA12 = 8'd205, ALPHA14 = 8'd19, ALPHA16 = 8'd76;
     localparam /*ALPHA4  = 8'd16, ALPHA8  = 8'd29, ALPHA12 = 8'd205, ALPHA16 = 8'd76, ALPHA20 = 8'd180,*/ ALPHA24 = 8'd143, ALPHA28 = 8'd24, ALPHA32 = 8'd157;
@@ -47,12 +46,12 @@ module s3_cseeh(
     localparam ALPHA232 = 8'd247, ALPHA236 = 8'd203, ALPHA240 = 8'd44, ALPHA244 = 8'd250, ALPHA248 = 8'd27, ALPHA252 = 8'd173, ALPHA256 = 8'd2, ALPHA260 = 8'd32;
     localparam ALPHA290 = 8'd156, ALPHA295 = 8'd106, ALPHA300 = 8'd193, ALPHA305 = 8'd5, ALPHA310 = 8'd160, ALPHA315 = 8'd185, ALPHA320 = 8'd190, ALPHA325 = 8'd94;
     //localparam ALPHA35 = 8'd156, ALPHA40 = 8'd106, ALPHA45 = 8'd193, ALPHA50 = 8'd5, ALPHA55 = 8'd160, ALPHA60 = 8'd185, ALPHA65 = 8'd190, ALPHA70 = 8'd94;
-    localparam ALPHA250 = 8'd108, ALPHA251 = 8'd216, ALPHA252 = 8'd173, ALPHA253 = 8'd71,  ALPHA254 = 8'd142, ALPHA255 = 8'd1;
-    localparam ALPHA500 = 8'd233, ALPHA502 = 8'd131, ALPHA504 = 8'd54,  ALPHA506 = 8'd216, ALPHA508 = 8'd71,  ALPHA510 = 8'd1;
-    localparam  ALPHA1000 = 8'd235,  ALPHA1001 = 8'd203,  ALPHA1002 = 8'd139,  ALPHA1003 = 8'd11,  ALPHA1004 = 8'd22,  ALPHA1005 = 8'd44;
-    //localparam ALPHA235 = 8'd235, ALPHA236 = 8'd203, ALPHA237 = 8'd139, ALPHA238 = 8'd11, ALPHA239 = 8'd22, ALPHA240 = 8'd44;
-    localparam ALPHA1250 = 8'244, ALPHA1251 = 8'245, ALPHA1252 = 8'247, ALPHA1253 = 8'243, ALPHA1254 = 8'251, ALPHA1255 = 8'235;
-    //localparam ALPHA230 = 8'd244, ALPHA231 = 8'd245, ALPHA232 = 8'd247, ALPHA233 = 8'd243, ALPHA234 = 8'd251, ALPHA235 = 8'd235;
+    localparam ALPHA250 = 8'd108, ALPHA251 = 8'd216, /*ALPHA252 = 8'd173,*/ ALPHA253 = 8'd71, ALPHA254 = 8'd142, ALPHA255 = 8'd1;
+    localparam ALPHA500 = 8'd233, ALPHA502 = 8'd131, ALPHA504 = 8'd54, ALPHA506 = 8'd216, ALPHA508 = 8'd71, ALPHA510 = 8'd1;
+    localparam ALPHA1000 = 8'd235, ALPHA1004 = 8'd22, ALPHA1008 = 8'd125, ALPHA1012 = 8'd131, ALPHA1016 = 8'd216, ALPHA1020 = 8'd1;
+    //localparam ALPHA235 = 8'd235,  ALPHA239 = 8'd22,  ALPHA243 = 8'd125,  ALPHA247 = 8'd131,  ALPHA251 = 8'd216,  ALPHA255 = 8'd1;
+    localparam ALPHA1250 = 8'd244, ALPHA1255 = 8'd235, ALPHA1260 = 8'd44, ALPHA1265 = 8'd233, ALPHA1270 = 8'd108, ALPHA1275 = 8'd1;
+    //localparam ALPHA230 = 8'd244, ALPHA235 = 8'd235, ALPHA240 = 8'd44, ALPHA245 = 8'd233, ALPHA250 = 8'd108, ALPHA255 = 8'd1;
     localparam ITERATION='d24;
 
     reg [4:0] counter_it;
@@ -177,10 +176,10 @@ module s3_cseeh(
         end
     end
 
-    assign mux_lambda1  = csee_init ? rs_lambda1 : (csee_keep ? l1_multi_a1_p8 : 'h00);
-    assign mux_lambda2  = csee_init ? rs_lambda2 : (csee_keep ? l2_multi_a2_p8 : 'h00);
-    assign mux_omega0   = csee_init ? rs_omega0  : (csee_keep ? o0_multi_a0_p8 : 'h00);
-    assign mux_omega1   = csee_init ? rs_omega1  : (csee_keep ? o1_multi_a1_p8 : 'h00);
+    assign mux_lambda1  = csee_init ? rs_lambda1 : csee_keep ? l1_multi_a1_p8 : 'h00;
+    assign mux_lambda2  = csee_init ? rs_lambda2 : csee_keep ? l2_multi_a2_p8 : 'h00;
+    assign mux_omega0   = csee_init ? rs_omega0  : csee_keep ? o0_multi_a0_p8 : 'h00;
+    assign mux_omega1   = csee_init ? rs_omega1  : csee_keep ? o1_multi_a1_p8 : 'h00;
 
     assign mux_lam1_a0 = csee_init ? ALPHA58  : ALPHA1 ;
     assign mux_lam1_a1 = csee_init ? ALPHA59  : ALPHA2 ;
@@ -215,22 +214,22 @@ module s3_cseeh(
     assign mux_ome1_a6 = csee_init ? ALPHA320 : ALPHA35;
     assign mux_ome1_a7 = csee_init ? ALPHA325 : ALPHA40;
 
-    s3_cseeh_one u_s3_cseeh_one_0 (.cseeh_one_ena(csee_in_process), .lam_alpha1(mux_lam1_a0), .lam_alpha2(mux_lam2_a0), .oem_alpha0(mux_ome0_a0), .ome_alpha1(mux_ome0_a0), .rs_lambda0(rs_lambda0), .rs_lambda1(mux_lambda1), .rs_lambda2(mux_lambda2), .rs_omega0(mux_omega0), .rs_omega1(mux_omega1), .error_flag(error_flag_0), .error_data(error_data_0));
-    s3_cseeh_one u_s3_cseeh_one_1 (.cseeh_one_ena(csee_in_process), .lam_alpha1(mux_lam1_a1), .lam_alpha2(mux_lam2_a1), .oem_alpha0(mux_ome0_a1), .ome_alpha1(mux_ome0_a1), .rs_lambda0(rs_lambda0), .rs_lambda1(mux_lambda1), .rs_lambda2(mux_lambda2), .rs_omega0(mux_omega0), .rs_omega1(mux_omega1), .error_flag(error_flag_1), .error_data(error_data_1));
-    s3_cseeh_one u_s3_cseeh_one_2 (.cseeh_one_ena(csee_in_process), .lam_alpha1(mux_lam1_a2), .lam_alpha2(mux_lam2_a2), .oem_alpha0(mux_ome0_a2), .ome_alpha1(mux_ome0_a2), .rs_lambda0(rs_lambda0), .rs_lambda1(mux_lambda1), .rs_lambda2(mux_lambda2), .rs_omega0(mux_omega0), .rs_omega1(mux_omega1), .error_flag(error_flag_2), .error_data(error_data_2));
-    s3_cseeh_one u_s3_cseeh_one_3 (.cseeh_one_ena(csee_in_process), .lam_alpha1(mux_lam1_a3), .lam_alpha2(mux_lam2_a3), .oem_alpha0(mux_ome0_a3), .ome_alpha1(mux_ome0_a3), .rs_lambda0(rs_lambda0), .rs_lambda1(mux_lambda1), .rs_lambda2(mux_lambda2), .rs_omega0(mux_omega0), .rs_omega1(mux_omega1), .error_flag(error_flag_3), .error_data(error_data_3));
-    s3_cseeh_one u_s3_cseeh_one_4 (.cseeh_one_ena(csee_in_process), .lam_alpha1(mux_lam1_a4), .lam_alpha2(mux_lam2_a4), .oem_alpha0(mux_ome0_a4), .ome_alpha1(mux_ome0_a4), .rs_lambda0(rs_lambda0), .rs_lambda1(mux_lambda1), .rs_lambda2(mux_lambda2), .rs_omega0(mux_omega0), .rs_omega1(mux_omega1), .error_flag(error_flag_4), .error_data(error_data_4));
-    s3_cseeh_one u_s3_cseeh_one_5 (.cseeh_one_ena(csee_in_process), .lam_alpha1(mux_lam1_a5), .lam_alpha2(mux_lam2_a5), .oem_alpha0(mux_ome0_a5), .ome_alpha1(mux_ome0_a5), .rs_lambda0(rs_lambda0), .rs_lambda1(mux_lambda1), .rs_lambda2(mux_lambda2), .rs_omega0(mux_omega0), .rs_omega1(mux_omega1), .error_flag(error_flag_5), .error_data(error_data_5));
-    s3_cseeh_one u_s3_cseeh_one_6 (.cseeh_one_ena(csee_in_process), .lam_alpha1(mux_lam1_a6), .lam_alpha2(mux_lam2_a6), .oem_alpha0(mux_ome0_a6), .ome_alpha1(mux_ome0_a6), .rs_lambda0(rs_lambda0), .rs_lambda1(mux_lambda1), .rs_lambda2(mux_lambda2), .rs_omega0(mux_omega0), .rs_omega1(mux_omega1), .error_flag(error_flag_6), .error_data(error_data_6));
-    s3_cseeh_one u_s3_cseeh_one_7 (.cseeh_one_ena(csee_in_process), .lam_alpha1(mux_lam1_a7), .lam_alpha2(mux_lam2_a7), .oem_alpha0(mux_ome0_a7), .ome_alpha1(mux_ome0_a7), .rs_lambda0(rs_lambda0), .rs_lambda1(mux_lambda1), .rs_lambda2(mux_lambda2), .rs_omega0(mux_omega0), .rs_omega1(mux_omega1), .error_flag(error_flag_7), .error_data(error_data_7), 
+    s3_cseeh_one u_s3_cseeh_one_0 (.cseeh_one_ena(csee_in_process), .lam_alpha1(mux_lam1_a0), .lam_alpha2(mux_lam2_a0), .ome_alpha0(mux_ome0_a0), .ome_alpha1(mux_ome1_a0), .rs_lambda0(rs_lambda0), .rs_lambda1(mux_lambda1), .rs_lambda2(mux_lambda2), .rs_omega0(mux_omega0), .rs_omega1(mux_omega1), .error_flag(error_flag_0), .error_data(error_data_0));
+    s3_cseeh_one u_s3_cseeh_one_1 (.cseeh_one_ena(csee_in_process), .lam_alpha1(mux_lam1_a1), .lam_alpha2(mux_lam2_a1), .ome_alpha0(mux_ome0_a1), .ome_alpha1(mux_ome1_a1), .rs_lambda0(rs_lambda0), .rs_lambda1(mux_lambda1), .rs_lambda2(mux_lambda2), .rs_omega0(mux_omega0), .rs_omega1(mux_omega1), .error_flag(error_flag_1), .error_data(error_data_1));
+    s3_cseeh_one u_s3_cseeh_one_2 (.cseeh_one_ena(csee_in_process), .lam_alpha1(mux_lam1_a2), .lam_alpha2(mux_lam2_a2), .ome_alpha0(mux_ome0_a2), .ome_alpha1(mux_ome1_a2), .rs_lambda0(rs_lambda0), .rs_lambda1(mux_lambda1), .rs_lambda2(mux_lambda2), .rs_omega0(mux_omega0), .rs_omega1(mux_omega1), .error_flag(error_flag_2), .error_data(error_data_2));
+    s3_cseeh_one u_s3_cseeh_one_3 (.cseeh_one_ena(csee_in_process), .lam_alpha1(mux_lam1_a3), .lam_alpha2(mux_lam2_a3), .ome_alpha0(mux_ome0_a3), .ome_alpha1(mux_ome1_a3), .rs_lambda0(rs_lambda0), .rs_lambda1(mux_lambda1), .rs_lambda2(mux_lambda2), .rs_omega0(mux_omega0), .rs_omega1(mux_omega1), .error_flag(error_flag_3), .error_data(error_data_3));
+    s3_cseeh_one u_s3_cseeh_one_4 (.cseeh_one_ena(csee_in_process), .lam_alpha1(mux_lam1_a4), .lam_alpha2(mux_lam2_a4), .ome_alpha0(mux_ome0_a4), .ome_alpha1(mux_ome1_a4), .rs_lambda0(rs_lambda0), .rs_lambda1(mux_lambda1), .rs_lambda2(mux_lambda2), .rs_omega0(mux_omega0), .rs_omega1(mux_omega1), .error_flag(error_flag_4), .error_data(error_data_4));
+    s3_cseeh_one u_s3_cseeh_one_5 (.cseeh_one_ena(csee_in_process), .lam_alpha1(mux_lam1_a5), .lam_alpha2(mux_lam2_a5), .ome_alpha0(mux_ome0_a5), .ome_alpha1(mux_ome1_a5), .rs_lambda0(rs_lambda0), .rs_lambda1(mux_lambda1), .rs_lambda2(mux_lambda2), .rs_omega0(mux_omega0), .rs_omega1(mux_omega1), .error_flag(error_flag_5), .error_data(error_data_5));
+    s3_cseeh_one u_s3_cseeh_one_6 (.cseeh_one_ena(csee_in_process), .lam_alpha1(mux_lam1_a6), .lam_alpha2(mux_lam2_a6), .ome_alpha0(mux_ome0_a6), .ome_alpha1(mux_ome1_a6), .rs_lambda0(rs_lambda0), .rs_lambda1(mux_lambda1), .rs_lambda2(mux_lambda2), .rs_omega0(mux_omega0), .rs_omega1(mux_omega1), .error_flag(error_flag_6), .error_data(error_data_6));
+    s3_cseeh_one u_s3_cseeh_one_7 (.cseeh_one_ena(csee_in_process), .lam_alpha1(mux_lam1_a7), .lam_alpha2(mux_lam2_a7), .ome_alpha0(mux_ome0_a7), .ome_alpha1(mux_ome1_a7), .rs_lambda0(rs_lambda0), .rs_lambda1(mux_lambda1), .rs_lambda2(mux_lambda2), .rs_omega0(mux_omega0), .rs_omega1(mux_omega1), .error_flag(error_flag_7), .error_data(error_data_7), 
                                    .l1_multi_a1(l1_multi_a1_p8_next), .l2_multi_a2(l2_multi_a2_p8_next), .o0_multi_a0(o0_multi_a0_p8_next), .o1_multi_a1(o1_multi_a1_p8_next));
 
-    s3_cseeh_one u_s3_cseeh_one_192 (.cseeh_one_ena(csee_init), .lam_alpha1(ALPHA250), .lam_alpha2(ALPHA500), .oem_alpha0(ALPHA1000), .ome_alpha1(ALPHA1250), .rs_lambda0(rs_lambda0), .rs_lambda1(rs_lambda1), .rs_lambda2(rs_lambda2), .rs_omega0(rs_omega0), .rs_omega1(rs_omega1), .error_flag(error_flag_192), .error_data(error_data_192));
-    s3_cseeh_one u_s3_cseeh_one_193 (.cseeh_one_ena(csee_init), .lam_alpha1(ALPHA251), .lam_alpha2(ALPHA502), .oem_alpha0(ALPHA1001), .ome_alpha1(ALPHA1251), .rs_lambda0(rs_lambda0), .rs_lambda1(rs_lambda1), .rs_lambda2(rs_lambda2), .rs_omega0(rs_omega0), .rs_omega1(rs_omega1), .error_flag(error_flag_193), .error_data(error_data_193));
-    s3_cseeh_one u_s3_cseeh_one_194 (.cseeh_one_ena(csee_init), .lam_alpha1(ALPHA252), .lam_alpha2(ALPHA504), .oem_alpha0(ALPHA1002), .ome_alpha1(ALPHA1252), .rs_lambda0(rs_lambda0), .rs_lambda1(rs_lambda1), .rs_lambda2(rs_lambda2), .rs_omega0(rs_omega0), .rs_omega1(rs_omega1), .error_flag(error_flag_194), .error_data(error_data_194));
-    s3_cseeh_one u_s3_cseeh_one_195 (.cseeh_one_ena(csee_init), .lam_alpha1(ALPHA253), .lam_alpha2(ALPHA506), .oem_alpha0(ALPHA1003), .ome_alpha1(ALPHA1253), .rs_lambda0(rs_lambda0), .rs_lambda1(rs_lambda1), .rs_lambda2(rs_lambda2), .rs_omega0(rs_omega0), .rs_omega1(rs_omega1), .error_flag(error_flag_195), .error_data(error_data_195));
-    s3_cseeh_one u_s3_cseeh_one_196 (.cseeh_one_ena(csee_init), .lam_alpha1(ALPHA254), .lam_alpha2(ALPHA508), .oem_alpha0(ALPHA1004), .ome_alpha1(ALPHA1254), .rs_lambda0(rs_lambda0), .rs_lambda1(rs_lambda1), .rs_lambda2(rs_lambda2), .rs_omega0(rs_omega0), .rs_omega1(rs_omega1), .error_flag(error_flag_196), .error_data(error_data_196));
-    s3_cseeh_one u_s3_cseeh_one_197 (.cseeh_one_ena(csee_init), .lam_alpha1(ALPHA255), .lam_alpha2(ALPHA510), .oem_alpha0(ALPHA1005), .ome_alpha1(ALPHA1255), .rs_lambda0(rs_lambda0), .rs_lambda1(rs_lambda1), .rs_lambda2(rs_lambda2), .rs_omega0(rs_omega0), .rs_omega1(rs_omega1), .error_flag(error_flag_197), .error_data(error_data_197));
+    s3_cseeh_one u_s3_cseeh_one_192 (.cseeh_one_ena(csee_init), .lam_alpha1(ALPHA250), .lam_alpha2(ALPHA500), .ome_alpha0(ALPHA1000), .ome_alpha1(ALPHA1250), .rs_lambda0(rs_lambda0), .rs_lambda1(rs_lambda1), .rs_lambda2(rs_lambda2), .rs_omega0(rs_omega0), .rs_omega1(rs_omega1), .error_flag(error_flag_192), .error_data(error_data_192));
+    s3_cseeh_one u_s3_cseeh_one_193 (.cseeh_one_ena(csee_init), .lam_alpha1(ALPHA251), .lam_alpha2(ALPHA502), .ome_alpha0(ALPHA1004), .ome_alpha1(ALPHA1255), .rs_lambda0(rs_lambda0), .rs_lambda1(rs_lambda1), .rs_lambda2(rs_lambda2), .rs_omega0(rs_omega0), .rs_omega1(rs_omega1), .error_flag(error_flag_193), .error_data(error_data_193));
+    s3_cseeh_one u_s3_cseeh_one_194 (.cseeh_one_ena(csee_init), .lam_alpha1(ALPHA252), .lam_alpha2(ALPHA504), .ome_alpha0(ALPHA1008), .ome_alpha1(ALPHA1260), .rs_lambda0(rs_lambda0), .rs_lambda1(rs_lambda1), .rs_lambda2(rs_lambda2), .rs_omega0(rs_omega0), .rs_omega1(rs_omega1), .error_flag(error_flag_194), .error_data(error_data_194));
+    s3_cseeh_one u_s3_cseeh_one_195 (.cseeh_one_ena(csee_init), .lam_alpha1(ALPHA253), .lam_alpha2(ALPHA506), .ome_alpha0(ALPHA1012), .ome_alpha1(ALPHA1265), .rs_lambda0(rs_lambda0), .rs_lambda1(rs_lambda1), .rs_lambda2(rs_lambda2), .rs_omega0(rs_omega0), .rs_omega1(rs_omega1), .error_flag(error_flag_195), .error_data(error_data_195));
+    s3_cseeh_one u_s3_cseeh_one_196 (.cseeh_one_ena(csee_init), .lam_alpha1(ALPHA254), .lam_alpha2(ALPHA508), .ome_alpha0(ALPHA1016), .ome_alpha1(ALPHA1270), .rs_lambda0(rs_lambda0), .rs_lambda1(rs_lambda1), .rs_lambda2(rs_lambda2), .rs_omega0(rs_omega0), .rs_omega1(rs_omega1), .error_flag(error_flag_196), .error_data(error_data_196));
+    s3_cseeh_one u_s3_cseeh_one_197 (.cseeh_one_ena(csee_init), .lam_alpha1(ALPHA255), .lam_alpha2(ALPHA510), .ome_alpha0(ALPHA1020), .ome_alpha1(ALPHA1275), .rs_lambda0(rs_lambda0), .rs_lambda1(rs_lambda1), .rs_lambda2(rs_lambda2), .rs_omega0(rs_omega0), .rs_omega1(rs_omega1), .error_flag(error_flag_197), .error_data(error_data_197));
 
     assign rs_error_data = {error_data_0, error_data_1, error_data_2, error_data_3, error_data_4, error_data_5, error_data_6, error_data_7};
     assign rs_error_sync = {error_data_192[3:0], error_data_193};
@@ -281,7 +280,7 @@ module s3_cseeh_one(
     input wire       cseeh_one_ena,
     input wire [7:0] lam_alpha1,
     input wire [7:0] lam_alpha2,
-    input wire [7:0] oem_alpha0,
+    input wire [7:0] ome_alpha0,
     input wire [7:0] ome_alpha1,
     input wire [7:0] rs_lambda0,
     input wire [7:0] rs_lambda1,
@@ -293,7 +292,7 @@ module s3_cseeh_one(
     output wire [7:0] error_data,
     output wire [7:0] l1_multi_a1,
     output wire [7:0] l2_multi_a2,
-    output wire [7:0] o0_multi_a0
+    output wire [7:0] o0_multi_a0,
     output wire [7:0] o1_multi_a1
 );
 
@@ -307,7 +306,7 @@ module s3_cseeh_one(
 
     gf2m8_multi u_gf2m8_multi_l1al( .x(rs_lambda1), .y(lam_alpha1), .z(l1_x_a1) );
     gf2m8_multi u_gf2m8_multi_l2a2( .x(rs_lambda2), .y(lam_alpha2), .z(l2_x_a2) );
-    gf2m8_multi u_gf2m8_multi_o0a0( .x(rs_omega0 ), .y(oem_alpha0), .z(o0_x_a0) );
+    gf2m8_multi u_gf2m8_multi_o0a0( .x(rs_omega0 ), .y(ome_alpha0), .z(o0_x_a0) );
     gf2m8_multi u_gf2m8_multi_o1a1( .x(rs_omega1 ), .y(ome_alpha1), .z(o1_x_a1) );
 
     gf2m8_inverse u_gf2m8_inverse_l1a1i( .b(l1_x_a1), .b_inv(l1_x_a1_inv) );

@@ -202,11 +202,13 @@ module s2_kes_ribm1(
     icg u_icg_kes_rq(.clk(clk), .ena(kes_in_process), .rstn(rstn), .gclk(kes_in_process_clk));
     always @(posedge kes_in_process_clk or negedge rstn) begin
         if(!rstn) begin
-            L <= `D 8'h00;//4
+            L <= `D 'd0;//4
+            gamma <= `D 8'h00;
             {Delta0, Delta1, Delta2, Delta3, Delta4, Delta5, Delta6} <= `D {8'h00, 8'h00, 8'h00, 8'h00, 8'h00, 8'h00, 8'h00};
             {Theta0, Theta1, Theta2, Theta3, Theta4, Theta5, Theta6} <= `D {8'h00, 8'h00, 8'h00, 8'h00, 8'h00, 8'h00, 8'h00};
         end else begin
             L <= `D L_next;
+            gamma <= `D gamma_next;
             {Delta0, Delta1, Delta2, Delta3, Delta4, Delta5, Delta6} <= `D {Delta0_next, Delta1_next, Delta2_next, Delta3_next, Delta4_next, Delta5_next, Delta6_next};
             {Theta0, Theta1, Theta2, Theta3, Theta4, Theta5, Theta6} <= `D {Theta0_next, Theta1_next, Theta2_next, Theta3_next, Theta4_next, Theta5_next, Theta6_next};
         end

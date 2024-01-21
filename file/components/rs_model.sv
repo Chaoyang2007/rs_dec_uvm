@@ -428,31 +428,31 @@ class rs_model extends uvm_component;
         bit [7:0] delta, gamma;
         int L = 0;
         bit [7:0] temp_Delta0, temp_Delta1, temp_Delta2, temp_Delta3, temp_Delta4, temp_Delta5, temp_Delta6;
-        bit [7:0] dG0, dG1, dG2, dG3, dG4, dG5;
-        bit [7:0] gD0, gD1, gD2, gD3, gD4, gD5;
+        bit [7:0] dG1, dG2, dG3, dG4, dG5, dG6;
+        bit [7:0] gD1, gD2, gD3, gD4, gD5, gD6;
 
         for (integer K = 0; K < 2*`T; K++) begin
             // degDelta >= `T
-            delta = Delta6;
-            gamma = Gamma6;
+            delta = Delta0;
+            gamma = Gamma0;
             `uvm_info("kescal", $sformatf("%0d-s Delta=(%0d,%0d,%0d,%0d,%0d,%0d,%0d)",K,Delta0,Delta1,Delta2,Delta3,Delta4,Delta5,Delta6), UVM_HIGH);
             `uvm_info("kescal", $sformatf("%0d-s Gamma=(%0d,%0d,%0d,%0d,%0d,%0d,%0d)",K,Gamma0,Gamma1,Gamma2,Gamma3,Gamma4,Gamma5,Gamma6), UVM_HIGH);
             
             // Multiplications
-            //rs_utils::gf2m8_multi(delta, Gamma0, dG0);
             rs_utils::gf2m8_multi(delta, Gamma1, dG1);
             rs_utils::gf2m8_multi(delta, Gamma2, dG2);
             rs_utils::gf2m8_multi(delta, Gamma3, dG3);
             rs_utils::gf2m8_multi(delta, Gamma4, dG4);
             rs_utils::gf2m8_multi(delta, Gamma5, dG5);
-            //rs_utils::gf2m8_multi(gamma, Delta0, gD0);
+            rs_utils::gf2m8_multi(delta, Gamma6, dG6);
             rs_utils::gf2m8_multi(gamma, Delta1, gD1);
             rs_utils::gf2m8_multi(gamma, Delta2, gD2);
             rs_utils::gf2m8_multi(gamma, Delta3, gD3);
             rs_utils::gf2m8_multi(gamma, Delta4, gD4);
             rs_utils::gf2m8_multi(gamma, Delta5, gD5);
+            rs_utils::gf2m8_multi(gamma, Delta6, gD6);
             
-            if (delta != 0 && degDelta < degGamma) begin
+            if (delta != 0 && L<<1 <= K) begin //di!=0 && 2L<=K
                 // switch
                 L = K + 1 - L;
                 // Update Gamma values

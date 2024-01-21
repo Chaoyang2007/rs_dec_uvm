@@ -17,16 +17,17 @@
 
 `define B *8-1
 
-//`define BM1
-//`define BM2
-//`define IBM1
-//`define IBM2
-//`define RIBM1
-//`define RIBM2
-//`define EUCLID
-//`define ME
-//`define DCME0
-//`define DCME2
+`define BM1
+`define BM2
+`define IBM1
+`define IBM2
+`define RIBM1
+`define RIBM2
+
+`define EUCLID
+`define ME
+`define DCME0
+`define DCME2
 
 `ifdef BM1
 `define S2_KES s2_kes_bm1

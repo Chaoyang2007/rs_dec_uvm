@@ -130,9 +130,9 @@ module s2_kes_dcme0(
     wire [7:0] msb_Q_multi_L0;
     wire [7:0] msb_Q_multi_L1;
     wire [7:0] msb_Q_multi_L2;
-    wire [7:0] msb_R_multi_L3;
-    wire [7:0] msb_R_multi_L4;
-    wire [7:0] msb_R_multi_L5;
+    wire [7:0] msb_Q_multi_L3;
+    wire [7:0] msb_Q_multi_L4;
+    wire [7:0] msb_Q_multi_L5;
 
     wire [7:0] wire_P0;
     wire [7:0] wire_P1;

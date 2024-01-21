@@ -126,9 +126,11 @@ module s2_kes_bm2(
     wire [7:0] delta_multi_B0;
     wire [7:0] delta_multi_B1;
     wire [7:0] delta_multi_B2;
+    wire [7:0] delta_multi_B3;
     wire [7:0] delta_multi_C0;
     wire [7:0] delta_multi_C1;
     wire [7:0] delta_multi_C2;
+    wire [7:0] delta_multi_C3;
 
     wire idle;
     wire init;
@@ -173,16 +175,16 @@ module s2_kes_bm2(
 
     assign kes_in_process = init | ~idle;
 
-    gf2m8_multi u_gf2m8_multi_ls0 ( .x(Lambda0), .y(Syndrome0), .z(lambda0_multi_S0) );
-    gf2m8_multi u_gf2m8_multi_ls1 ( .x(Lambda0), .y(Syndrome1), .z(lambda0_multi_S1) );
-    gf2m8_multi u_gf2m8_multi_ls1 ( .x(Lambda1), .y(Syndrome0), .z(lambda1_multi_S0) );
-    gf2m8_multi u_gf2m8_multi_ls1 ( .x(Lambda0), .y(Syndrome2), .z(lambda0_multi_S2) );
-    gf2m8_multi u_gf2m8_multi_ls1 ( .x(Lambda1), .y(Syndrome1), .z(lambda1_multi_S1) );
-    gf2m8_multi u_gf2m8_multi_ls1 ( .x(Lambda2), .y(Syndrome0), .z(lambda2_multi_S0) );
-    gf2m8_multi u_gf2m8_multi_ls1 ( .x(Lambda0), .y(Syndrome3), .z(lambda0_multi_S3) );
-    gf2m8_multi u_gf2m8_multi_ls1 ( .x(Lambda1), .y(Syndrome2), .z(lambda1_multi_S2) );
-    gf2m8_multi u_gf2m8_multi_ls1 ( .x(Lambda2), .y(Syndrome1), .z(lambda2_multi_S1) );
-    gf2m8_multi u_gf2m8_multi_ls1 ( .x(Lambda3), .y(Syndrome0), .z(lambda3_multi_S0) );
+    gf2m8_multi u_gf2m8_multi_ls00 ( .x(Lambda0), .y(Syndrome0), .z(lambda0_multi_S0) );
+    gf2m8_multi u_gf2m8_multi_ls01 ( .x(Lambda0), .y(Syndrome1), .z(lambda0_multi_S1) );
+    gf2m8_multi u_gf2m8_multi_ls10 ( .x(Lambda1), .y(Syndrome0), .z(lambda1_multi_S0) );
+    gf2m8_multi u_gf2m8_multi_ls02 ( .x(Lambda0), .y(Syndrome2), .z(lambda0_multi_S2) );
+    gf2m8_multi u_gf2m8_multi_ls11 ( .x(Lambda1), .y(Syndrome1), .z(lambda1_multi_S1) );
+    gf2m8_multi u_gf2m8_multi_ls20 ( .x(Lambda2), .y(Syndrome0), .z(lambda2_multi_S0) );
+    gf2m8_multi u_gf2m8_multi_ls03 ( .x(Lambda0), .y(Syndrome3), .z(lambda0_multi_S3) );
+    gf2m8_multi u_gf2m8_multi_ls12 ( .x(Lambda1), .y(Syndrome2), .z(lambda1_multi_S2) );
+    gf2m8_multi u_gf2m8_multi_ls21 ( .x(Lambda2), .y(Syndrome1), .z(lambda2_multi_S1) );
+    gf2m8_multi u_gf2m8_multi_ls30 ( .x(Lambda3), .y(Syndrome0), .z(lambda3_multi_S0) );
 
     //δi=i-th coefficient of ∆·S-Ω
     assign delta = (K==0) ? lambda0_multi_S0 ^ Omega0 :
@@ -196,19 +198,23 @@ module s2_kes_bm2(
     gf2m8_multi u_gf2m8_multi_db0 ( .x(deltaDi), .y(PolyB0), .z(delta_multi_B0) );
     gf2m8_multi u_gf2m8_multi_db1 ( .x(deltaDi), .y(PolyB1), .z(delta_multi_B1) );
     gf2m8_multi u_gf2m8_multi_db2 ( .x(deltaDi), .y(PolyB2), .z(delta_multi_B2) );
+    gf2m8_multi u_gf2m8_multi_db3 ( .x(deltaDi), .y(PolyB3), .z(delta_multi_B3) );
 
     gf2m8_multi u_gf2m8_multi_dc0 ( .x(deltaDi), .y(PolyC0), .z(delta_multi_C0) );
     gf2m8_multi u_gf2m8_multi_dc1 ( .x(deltaDi), .y(PolyC1), .z(delta_multi_C1) );
     gf2m8_multi u_gf2m8_multi_dc2 ( .x(deltaDi), .y(PolyC2), .z(delta_multi_C2) );
+    gf2m8_multi u_gf2m8_multi_dc3 ( .x(deltaDi), .y(PolyC3), .z(delta_multi_C3) );
 
     //Λ = Λ - δi/δ·B
     assign Lambda0_update = Lambda0 ^ delta_multi_B0;
     assign Lambda1_update = Lambda1 ^ delta_multi_B1;
     assign Lambda2_update = Lambda2 ^ delta_multi_B2;
+    assign Lambda3_update = Lambda3 ^ delta_multi_B3;
     //Ω = Ω - δi/δ·C
     assign Omega0_update = Omega0 ^ delta_multi_C0;
     assign Omega1_update = Omega1 ^ delta_multi_C1;
     assign Omega2_update = Omega2 ^ delta_multi_C2;
+    assign Omega3_update = Omega3 ^ delta_multi_C3;
     
     always @(*) begin
         if(idle) begin //load
@@ -219,8 +225,8 @@ module s2_kes_bm2(
             {PolyB0_next, PolyB1_next, PolyB2_next, PolyB3_next} = {8'h00, 8'h00, 8'h00, 8'h00};
             {PolyC0_next, PolyC1_next, PolyC2_next, PolyC3_next} = {8'h01, 8'h00, 8'h00, 8'h00};
         end else begin
-            {Lambda0_next, Lambda1_next, Lambda2_next, Lambda3_next} = {Lambda0_update, Lambda1_update, Lambda2_update};
-            {Omega0_next, Omega1_next, Omega2_next, Omega3_next} = {Omega0_update, Omega1_update, Omega2_update};
+            {Lambda0_next, Lambda1_next, Lambda2_next, Lambda3_next} = {Lambda0_update, Lambda1_update, Lambda2_update, Lambda3_update};
+            {Omega0_next, Omega1_next, Omega2_next, Omega3_next} = {Omega0_update, Omega1_update, Omega2_update, Omega3_update};
             if(swap) begin
                 L_next = K + 1 - L;
                 D_next = delta;
@@ -248,7 +254,7 @@ module s2_kes_bm2(
     icg u_icg_kes_rq(.clk(clk), .ena(kes_in_process), .rstn(rstn), .gclk(kes_in_process_clk));
     always @(posedge kes_in_process_clk or negedge rstn) begin
         if(!rstn) begin
-            L <= `D 8'h00;//4
+            L <= `D 'd0;//4
             D <= `D 8'h00;
             {Lambda0, Lambda1, Lambda2, Lambda3} <= `D {8'h00, 8'h00, 8'h00, 8'h00};
             {Omega0, Omega1, Omega2, Omega3} <= `D {8'h00, 8'h00, 8'h00, 8'h00};

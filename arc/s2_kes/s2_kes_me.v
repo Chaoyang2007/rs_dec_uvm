@@ -152,8 +152,8 @@ module s2_kes_me(
     end
 
     assign init  = kes_ena & idle;
-    assign done  = deg_P < 'd2; // kes done
-    assign swap  = deg_P < deg_Q; // swap R Q and calculate
+    assign done  = (deg_P < 'd2) & ~idle; // kes done
+    assign swap  = (deg_P < deg_Q) & ~idle; // swap R Q and calculate
 
     assign kes_in_process = init | ~idle;
     
@@ -174,7 +174,7 @@ module s2_kes_me(
     assign p0nz = wire_P3 == 0 && wire_P2 == 0 && wire_P1 == 0 && wire_P0 != 0;
 
     assign msb_R = r4nz ? reg_R4 : r3nz ? reg_R3 : r2nz ? reg_R2 : r1nz ? reg_R1 : reg_R0;
-    assign msb_Q = q3nz ? reg_R3 : q2nz ? reg_R2 : q1nz ? reg_R1 : reg_R0;
+    assign msb_Q = q3nz ? reg_Q3 : q2nz ? reg_Q2 : q1nz ? reg_Q1 : reg_Q0;
     assign deg_P = p3nz ? 3 : p2nz ? 2 : p1nz ? 1 : p0nz ? 0 : deg_Q;
 
     assign deg_diff = deg_R - deg_Q;
@@ -228,7 +228,7 @@ module s2_kes_me(
             {reg_Q0_next, reg_Q1_next, reg_Q2_next, reg_Q3_next, reg_Q4_next} = {rs_syn0, rs_syn1, rs_syn2, rs_syn3, 8'h00};
             {reg_L0_next, reg_L1_next, reg_L2_next} = {8'h00, 8'h00, 8'h00};
             {reg_U0_next, reg_U1_next, reg_U2_next} = {8'h01, 8'h00, 8'h00};
-        end else (swap) begin
+        end else if(swap) begin
             deg_R_next = deg_Q;
             deg_Q_next = deg_P;
             {reg_R0_next, reg_R1_next, reg_R2_next, reg_R3_next, reg_R4_next} = {reg_Q0, reg_Q1, reg_Q2, reg_Q3, reg_Q4};

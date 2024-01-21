@@ -4,7 +4,7 @@
 // 
 // Create Date: 2023/06/25 22:51:57
 // Design Name: 
-// Module Name: s2_kes_dcme2
+// Module Name: s2_kes_dcme2_nostate
 // Project Name: 
 // Desription: 5 cycles
 // no dcme2_state, done when deg_R<t
@@ -22,7 +22,7 @@
 `define D #0.2
 `endif
 
-module s2_kes_dcme2(
+module s2_kes_dcme2_nostate(
     input wire       clk,
     input wire       rstn,
     input wire       kes_ena,
@@ -104,7 +104,7 @@ module s2_kes_dcme2(
     wire [7:0] R6_update;
 
     reg  idle;
-    wire load;
+    wire init;
     wire done;
     wire stop;
     wire shift;
@@ -171,7 +171,7 @@ module s2_kes_dcme2(
         end else if(swap) begin
             deg_R_next = deg_Q - 'd1;
             deg_Q_next = deg_R;
-            b{reg_R0_next, reg_R1_next, reg_R2_next, reg_R3_next, reg_R4_next, reg_R5_next, reg_R6_next} = {R0_update, R1_update, R2_update, R3_update, R4_update, R5_update, R6_update};
+            {reg_R0_next, reg_R1_next, reg_R2_next, reg_R3_next, reg_R4_next, reg_R5_next, reg_R6_next} = {R0_update, R1_update, R2_update, R3_update, R4_update, R5_update, R6_update};
             {reg_Q0_next, reg_Q1_next, reg_Q2_next, reg_Q3_next, reg_Q4_next, reg_Q5_next, reg_Q6_next} = {reg_R0, reg_R1, reg_R2, reg_R3, reg_R4, reg_R5, reg_R6};                    
         end else begin
             deg_R_next = deg_R - 'd1;

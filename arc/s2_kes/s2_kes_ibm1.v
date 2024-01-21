@@ -181,7 +181,7 @@ module s2_kes_ibm1(
 
     gf2m8_multi u_gf2m8_multi_ls0 ( .x(Lambda0_next), .y(Syndrome0), .z(lambda0_multi_S0) );
     gf2m8_multi u_gf2m8_multi_ls1 ( .x(Lambda0_next), .y(Syndrome1), .z(lambda0_multi_S1) );
-    gf2m8_multi u_gf2m8_multi_ls1 ( .x(Lambda1_next), .y(Syndrome0), .z(lambda1_multi_S0) );
+    gf2m8_multi u_gf2m8_multi_ls2 ( .x(Lambda1_next), .y(Syndrome0), .z(lambda1_multi_S0) );
 
     //Ω = Λ·S mod x^(2t)
     assign Omega0_next = lambda0_multi_S0;
@@ -220,7 +220,7 @@ module s2_kes_ibm1(
     icg u_icg_kes_rq(.clk(clk), .ena(kes_in_process), .rstn(rstn), .gclk(kes_in_process_clk));
     always @(posedge kes_in_process_clk or negedge rstn) begin
         if(!rstn) begin
-            L <= `D 8'h00;//4
+            L <= `D 'd0;//4
             gamma <= `D 8'h00;
             {Lambda0, Lambda1, Lambda2} <= `D {8'h00, 8'h00, 8'h00};
             {PolyB0, PolyB1, PolyB2} <= `D {8'h00, 8'h00, 8'h00};
