@@ -32,8 +32,8 @@ module rs_fifo (
 
     input wire        rs_errdata_vld,
     input wire [63:0] rs_errdata,
-    input wire        rs_syncbit_vld,
-    input wire [11:0] rs_syncbit,
+    input wire        rs_errsync_vld,
+    input wire [11:0] rs_errsync,
     input wire        pop_data_ena,
 
     output reg        rs_pop_data_vld,
@@ -135,9 +135,9 @@ module rs_fifo (
                 isos_wr_ptr              <= `D isos_wr_ptr + 'b1;
                 isos_ram[isos_wr_ptr[0]] <= `D rs_data_syncbit;
             end
-            if (rs_syncbit_vld & !isos_aw_empty) begin
+            if (rs_errsync_vld & !isos_aw_empty) begin
                 isos_aw_ptr              <= `D isos_aw_ptr + 'b1;
-                isos_ram[isos_aw_ptr[0]] <= `D isos_ram[isos_aw_ptr[0]] ^ rs_syncbit;
+                isos_ram[isos_aw_ptr[0]] <= `D isos_ram[isos_aw_ptr[0]] ^ rs_errsync;
             end else if (pop_data_end) begin
                 isos_aw_ptr            <= `D isos_rd_ptr;
             end

@@ -208,15 +208,42 @@ class rs_model extends uvm_component;
         `uvm_info("decode", $sformatf("syndrome=(%0d, %0d, %0d, %0d)",syndrome[31:24], syndrome[23:16], syndrome[15:8], syndrome[7:0]), UVM_HIGH);
 
         if (syndrome != 'b0) begin
-            // Calculate kes
-            kes_cal(syndrome, lambda, omega);
-            `uvm_info("decode", $sformatf("lambda=(%0d, %0d, %0d)",lambda[23:16],lambda[15:8],lambda[7:0]), UVM_HIGH);
-            `uvm_info("decode", $sformatf("omega=(%0d, %0d)",omega[15:8],omega[7:0]), UVM_HIGH);
+            `ifdef RIBM1
+                `uvm_info("decode", $sformatf("ribm2 and csee_h ref-model used."), UVM_HIGH);
+                // Calculate kes
+                kes_cal_ribm2(syndrome, lambda, omega);
+                `uvm_info("decode", $sformatf("lambda=(%0d, %0d, %0d)",lambda[23:16],lambda[15:8],lambda[7:0]), UVM_HIGH);
+                `uvm_info("decode", $sformatf("omega=(%0d, %0d)",omega[15:8],omega[7:0]), UVM_HIGH);
 
-            // Calculate err_val and err_num
-            csee(lambda, omega, err_dec, err_isos, err_flag);
-            `uvm_info("decode", $sformatf("err_data=%0h",err_dec), UVM_HIGH);
-            `uvm_info("decode", $sformatf("err_isos=%0h",err_isos), UVM_HIGH);
+                // Calculate err_val and err_num
+                csee_h(lambda, omega, err_dec, err_isos, err_flag);
+                `uvm_info("decode", $sformatf("err_data=%0h",err_dec), UVM_HIGH);
+                `uvm_info("decode", $sformatf("err_isos=%0h",err_isos), UVM_HIGH);
+            `else
+            `ifdef RIBM2
+                `uvm_info("decode", $sformatf("ribm2 and csee_h ref-model used."), UVM_HIGH);
+                // Calculate kes
+                kes_cal_ribm2(syndrome, lambda, omega);
+                `uvm_info("decode", $sformatf("lambda=(%0d, %0d, %0d)",lambda[23:16],lambda[15:8],lambda[7:0]), UVM_HIGH);
+                `uvm_info("decode", $sformatf("omega=(%0d, %0d)",omega[15:8],omega[7:0]), UVM_HIGH);
+
+                // Calculate err_val and err_num
+                csee_h(lambda, omega, err_dec, err_isos, err_flag);
+                `uvm_info("decode", $sformatf("err_data=%0h",err_dec), UVM_HIGH);
+                `uvm_info("decode", $sformatf("err_isos=%0h",err_isos), UVM_HIGH);
+            `else
+                `uvm_info("decode", $sformatf("dcme2 and csee ref-model used."), UVM_HIGH);
+                // Calculate kes
+                kes_cal_dcme2(syndrome, lambda, omega);
+                `uvm_info("decode", $sformatf("lambda=(%0d, %0d, %0d)",lambda[23:16],lambda[15:8],lambda[7:0]), UVM_HIGH);
+                `uvm_info("decode", $sformatf("omega=(%0d, %0d)",omega[15:8],omega[7:0]), UVM_HIGH);
+
+                // Calculate err_val and err_num
+                csee(lambda, omega, err_dec, err_isos, err_flag);
+                `uvm_info("decode", $sformatf("err_data=%0h",err_dec), UVM_HIGH);
+                `uvm_info("decode", $sformatf("err_isos=%0h",err_isos), UVM_HIGH);
+            `endif // RIBM2
+            `endif // RIBM1
 
             // Decode and return the result
             dec  = err_dec  ^ rcv_data[198`B:48];
@@ -255,7 +282,7 @@ class rs_model extends uvm_component;
         syndrome = {S0, S1, S2, S3};
     endfunction // syn_cal
 
-    function void kes_cal(bit [31:0] S, ref bit[23:0] lambda, ref bit [15:0] omega);
+    function void kes_cal_dcme2(bit [31:0] S, ref bit[23:0] lambda, ref bit [15:0] omega);
         bit [7:0] R0=0, R1=0, R2=0, R3=0, R4=0, R5=0, R6=1;
         bit [7:0] Q0=1, Q1=0, Q2=0, Q3=S[31:24], Q4=S[23:16], Q5=S[15:8], Q6=S[7:0];
         int degR = 2*`T;
@@ -353,7 +380,7 @@ class rs_model extends uvm_component;
 
         lambda = {R2, R3, R4}; // l0, l1, l2 = R2, R3, R4;
         omega  = {R5, R6}; // o0, o1 = R5, R6;
-    endfunction // kes_cal
+    endfunction // kes_cal_dcme2
 
     function void csee(bit [23:0] lambda, bit [15:0] omega, ref bit [192`B:0] err_dec, ref bit [11:0] err_isos, ref int err_flag);
         parameter ALPHA0   = 8'd1;
@@ -393,6 +420,109 @@ class rs_model extends uvm_component;
         err_isos = error_val[6`B-4:4`B+1];
         err_flag = (error_num == 0 || error_num > 2) ? 'b1 : 'b0;;
     endfunction // csee
+
+    function void kes_cal_ribm2(bit [31:0] S, ref bit[23:0] lambda, ref bit [15:0] omega);
+        bit [7:0] Delta0=S[31:24], Delta1=S[23:16], Delta2=S[15:8], Delta3=S[7:0], Delta4=0, Delta5=0, Delta6=1;
+        bit [7:0] Gamma0=1, Gamma1=0, Gamma2=0, Gamma3=0, Gamma4=0, Gamma5=0, Gamma6=0;
+
+        bit [7:0] delta, gamma;
+        int L = 0;
+        bit [7:0] temp_Delta0, temp_Delta1, temp_Delta2, temp_Delta3, temp_Delta4, temp_Delta5, temp_Delta6;
+        bit [7:0] dG0, dG1, dG2, dG3, dG4, dG5;
+        bit [7:0] gD0, gD1, gD2, gD3, gD4, gD5;
+
+        for (integer K = 0; K < 2*`T; K++) begin
+            // degDelta >= `T
+            delta = Delta6;
+            gamma = Gamma6;
+            `uvm_info("kescal", $sformatf("%0d-s Delta=(%0d,%0d,%0d,%0d,%0d,%0d,%0d)",K,Delta0,Delta1,Delta2,Delta3,Delta4,Delta5,Delta6), UVM_HIGH);
+            `uvm_info("kescal", $sformatf("%0d-s Gamma=(%0d,%0d,%0d,%0d,%0d,%0d,%0d)",K,Gamma0,Gamma1,Gamma2,Gamma3,Gamma4,Gamma5,Gamma6), UVM_HIGH);
+            
+            // Multiplications
+            //rs_utils::gf2m8_multi(delta, Gamma0, dG0);
+            rs_utils::gf2m8_multi(delta, Gamma1, dG1);
+            rs_utils::gf2m8_multi(delta, Gamma2, dG2);
+            rs_utils::gf2m8_multi(delta, Gamma3, dG3);
+            rs_utils::gf2m8_multi(delta, Gamma4, dG4);
+            rs_utils::gf2m8_multi(delta, Gamma5, dG5);
+            //rs_utils::gf2m8_multi(gamma, Delta0, gD0);
+            rs_utils::gf2m8_multi(gamma, Delta1, gD1);
+            rs_utils::gf2m8_multi(gamma, Delta2, gD2);
+            rs_utils::gf2m8_multi(gamma, Delta3, gD3);
+            rs_utils::gf2m8_multi(gamma, Delta4, gD4);
+            rs_utils::gf2m8_multi(gamma, Delta5, gD5);
+            
+            if (delta != 0 && degDelta < degGamma) begin
+                // switch
+                L = K + 1 - L;
+                // Update Gamma values
+                Gamma0 = Delta0;
+                Gamma1 = Delta1;
+                Gamma2 = Delta2;
+                Gamma3 = Delta3;
+                Gamma4 = Delta4;
+                Gamma5 = Delta5;
+                Gamma6 = Delta6;
+            end
+            // Update Delta values
+            Delta0 = dG1 ^ gD1;
+            Delta1 = dG2 ^ gD2;
+            Delta2 = dG3 ^ gD3;
+            Delta3 = dG4 ^ gD4;
+            Delta4 = dG5 ^ gD5;
+            Delta5 = dG6 ^ gD6;
+            Delta6 = 0;
+
+            `uvm_info("kescal", $sformatf("%0d-p Delta=(%0d,%0d,%0d,%0d,%0d,%0d,%0d)",K,Delta0,Delta1,Delta2,Delta3,Delta4,Delta5,Delta6), UVM_HIGH);
+            `uvm_info("kescal", $sformatf("%0d-p Gamma=(%0d,%0d,%0d,%0d,%0d,%0d,%0d)",K,Gamma0,Gamma1,Gamma2,Gamma3,Gamma4,Gamma5,Gamma6), UVM_HIGH);
+        end
+
+        lambda = {Delta2, Delta3, Delta4}; // l0, l1, l2 = Delta2, Delta3, Delta4;
+        omega  = {Delta0, Delta1}; // o0, o1 = Delta0, Delta1;
+    endfunction // kes_cal_ribm2
+
+    function void csee_h(bit [23:0] lambda, bit [15:0] omega, ref bit [192`B:0] err_dec, ref bit [11:0] err_isos, ref int err_flag);
+        parameter ALPHA0   = 8'd1;
+        parameter ALPHA1   = 8'd2;
+        parameter ALPHA2   = 8'd4;
+        parameter ALPHA58  = 8'd105;
+        parameter ALPHA116 = 8'd248;
+        parameter ALPHA4   = 8'd16;
+        parameter ALPHA5   = 8'd32;
+        parameter ALPHA232 = 8'd247;
+        parameter ALPHA35  = 8'd156;
+        bit [7:0] a0 = lambda[23:16], a1 = lambda[15:8], a2 = lambda[7:0];
+        bit [7:0] b0 = omega[15:8], b1 = omega[7:0];
+        bit [7:0] sum_chk;
+        bit [7:0] err_val;
+        bit [198`B:0] error_val = 0;
+        int error_num = 0;
+
+        for (integer i = 0; i < `FEC_BLOCK_SIZE; i++) begin
+            // s_utils::gf2m8_multi(a0, ALPHA0, a0);
+            rs_utils::gf2m8_multi(a1, ((i == 0) ? ALPHA58 : ALPHA1),  a1);
+            rs_utils::gf2m8_multi(a2, ((i == 0) ? ALPHA116 : ALPHA2), a2);
+            rs_utils::gf2m8_multi(b0, ((i == 0) ? ALPHA232 : ALPHA4), b0);
+            rs_utils::gf2m8_multi(b1, ((i == 0) ? ALPHA35 : ALPHA5),  b1);
+
+            sum_chk = a0 ^ a1 ^ a2;
+            if (sum_chk == 'b0) begin
+                error_num = error_num + 1;
+                rs_utils::gf2m8_divid((b0 ^ b1), a1, err_val);
+                error_val = {error_val[197`B:0], err_val};
+                `uvm_info("csee", $sformatf("%0d: sum_chk = %0b",i,sum_chk), UVM_HIGH);
+                `uvm_info("csee", $sformatf("err_val = %0h",err_val), UVM_HIGH);
+                `uvm_info("csee", $sformatf("err_num = %0d",error_num), UVM_HIGH);
+            end else begin
+                error_val = {error_val[197`B:0], 8'd0};
+            end
+        end
+
+        `uvm_info("rs_model", $sformatf("decoded error num is %0d", error_num), UVM_MEDIUM);
+        err_dec  = error_val[198`B:6`B+1];
+        err_isos = error_val[6`B-4:4`B+1];
+        err_flag = (error_num == 0 || error_num > 2) ? 'b1 : 'b0;;
+    endfunction // csee_h
 
 endclass //rs_model extends uvm_component
 

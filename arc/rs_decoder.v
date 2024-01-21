@@ -152,7 +152,7 @@ module rs_decoder (
     wire [7:0] rs_omega0;
     wire [7:0] rs_omega1;
 
-    s2_kes u_s2_kes(
+    `S2_KES u_s2_kes(
         .clk(clk),
         .rstn(rstn),
         .kes_ena(syn_error),
@@ -169,12 +169,12 @@ module rs_decoder (
         .kes_done(kes_done)
     );
 
-    wire [63:0] rs_errdata;
-    wire [11:0] rs_syncbit;
-    wire csee_ongo;
-    wire rsdec_fail;
+    wire [63:0] rs_error_data;
+    wire [11:0] rs_error_sync;
+    wire csee_in_process;
+    wire rs_decode_fail;
     
-    s3_csee u_s3_csee(
+    `S3_CSEE u_s3_csee(
         .clk(clk),
         .rstn(rstn),
         .rs_ena(rs_ena),
@@ -185,10 +185,10 @@ module rs_decoder (
         .rs_omega0(rs_omega0),
         .rs_omega1(rs_omega1),
 
-        .csee_ongo(csee_ongo),
-        .rs_errdata(rs_errdata),
-        .rs_syncbit(rs_syncbit),
-        .rsdec_fail(rsdec_fail)
+        .csee_in_process(csee_in_process),
+        .rs_error_data(rs_error_data),
+        .rs_error_sync(rs_error_sync),
+        .rs_decode_fail(rs_decode_fail)
     );
 
     wire        rs_pop_data_vld;
@@ -202,10 +202,10 @@ module rs_decoder (
         .rs_data1(syn_data1),
         .data_last0(syn_data_last0),
         .data_last1(syn_data_last1),
-        .rs_errdata_vld(csee_ongo),
-        .rs_errdata(rs_errdata),
-        .rs_syncbit_vld(kes_done),
-        .rs_syncbit(rs_syncbit),
+        .rs_errdata_vld(csee_in_process),
+        .rs_errdata(rs_error_data),
+        .rs_errsync_vld(kes_done),
+        .rs_errsync(rs_error_sync),
         .pop_data_ena(dec_data_rd_ena),
         
         .rs_pop_data_vld(rs_pop_data_vld),
@@ -217,6 +217,6 @@ module rs_decoder (
     assign dec_vld = rs_pop_data_vld;
     assign dec_data     = rs_pop_data;
     assign dec_isos     = rs_pop_isos;
-    assign rde_error    = rsdec_fail;
+    assign rde_error    = rs_decode_fail;
 
 endmodule
