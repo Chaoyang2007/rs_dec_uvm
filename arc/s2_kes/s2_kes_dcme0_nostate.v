@@ -210,32 +210,32 @@ module s2_kes_dcme0_nostate(
 
     always @(*) begin
         if(idle) begin //load
-            deg_R_next <= 'd4;
-            deg_Q_next <= 'd3;
-            {reg_R0_next, reg_R1_next, reg_R2_next, reg_R3_next, reg_R4_next} <= {8'h00, 8'h00, 8'h00, 8'h00, 8'h01};
-            {reg_Q0_next, reg_Q1_next, reg_Q2_next, reg_Q3_next, reg_Q4_next} <= {8'h00, rs_syn0, rs_syn1, rs_syn2, rs_syn3};
-            {reg_L0_next, reg_L1_next, reg_L2_next, reg_L3_next, reg_L4_next, reg_L5_next} <= {8'h00, 8'h00, 8'h00, 8'h00, 8'h00, 8'h00};
-            {reg_U0_next, reg_U1_next, reg_U2_next, reg_U3_next, reg_U4_next, reg_U5_next} <= {8'h00, 8'h01, 8'h00, 8'h00, 8'h00, 8'h00};
+            deg_R_next = 'd4;
+            deg_Q_next = 'd3;
+            {reg_R0_next, reg_R1_next, reg_R2_next, reg_R3_next, reg_R4_next} = {8'h00, 8'h00, 8'h00, 8'h00, 8'h01};
+            {reg_Q0_next, reg_Q1_next, reg_Q2_next, reg_Q3_next, reg_Q4_next} = {8'h00, rs_syn0, rs_syn1, rs_syn2, rs_syn3};
+            {reg_L0_next, reg_L1_next, reg_L2_next, reg_L3_next, reg_L4_next, reg_L5_next} = {8'h00, 8'h00, 8'h00, 8'h00, 8'h00, 8'h00};
+            {reg_U0_next, reg_U1_next, reg_U2_next, reg_U3_next, reg_U4_next, reg_U5_next} = {8'h00, 8'h01, 8'h00, 8'h00, 8'h00, 8'h00};
         end else if(shift) begin
-            deg_R_next <= deg_R;
-            deg_Q_next <= deg_Q - 'd1;
-            {reg_R0_next, reg_R1_next, reg_R2_next, reg_R3_next, reg_R4_next} <= {reg_R0, reg_R1, reg_R2, reg_R3, reg_R4};
-            {reg_Q0_next, reg_Q1_next, reg_Q2_next, reg_Q3_next, reg_Q4_next} <= {8'h00, reg_Q0, reg_Q1, reg_Q2, reg_Q3};
-            {reg_L0_next, reg_L1_next, reg_L2_next, reg_L3_next, reg_L4_next, reg_L5_next} <= {reg_L0, reg_L1, reg_L2, reg_L3, reg_L4, reg_L5};
-            {reg_U0_next, reg_U1_next, reg_U2_next, reg_U3_next, reg_U4_next, reg_U5_next} <= {8'h00, reg_U0, reg_U1, reg_U2, reg_U3, reg_U4};
+            deg_R_next = deg_R;
+            deg_Q_next = deg_Q - 'd1;
+            {reg_R0_next, reg_R1_next, reg_R2_next, reg_R3_next, reg_R4_next} = {reg_R0, reg_R1, reg_R2, reg_R3, reg_R4};
+            {reg_Q0_next, reg_Q1_next, reg_Q2_next, reg_Q3_next, reg_Q4_next} = {8'h00, reg_Q0, reg_Q1, reg_Q2, reg_Q3};
+            {reg_L0_next, reg_L1_next, reg_L2_next, reg_L3_next, reg_L4_next, reg_L5_next} = {reg_L0, reg_L1, reg_L2, reg_L3, reg_L4, reg_L5};
+            {reg_U0_next, reg_U1_next, reg_U2_next, reg_U3_next, reg_U4_next, reg_U5_next} = {8'h00, reg_U0, reg_U1, reg_U2, reg_U3, reg_U4};
         end else if(swap) begin
-            deg_R_next <= deg_Q - 1;
-            deg_Q_next <= deg_R;
-            {reg_R0_next, reg_R1_next, reg_R2_next, reg_R3_next, reg_R4_next} <= {wire_P0, wire_P1, wire_P2, wire_P3, wire_P4};
-            {reg_Q0_next, reg_Q1_next, reg_Q2_next, reg_Q3_next, reg_Q4_next} <= {reg_R0, reg_R1, reg_R2, reg_R3, reg_R4};
-            {reg_L0_next, reg_L1_next, reg_L2_next, reg_L3_next, reg_L4_next, reg_L5_next} <= {wire_L0, wire_L1, wire_L2, wire_L3, wire_L4, wire_L5};
-            {reg_U0_next, reg_U1_next, reg_U2_next, reg_U3_next, reg_U4_next, reg_U5_next} <= {reg_L0, reg_L1, reg_L2, reg_L3, reg_L4, reg_L5};
+            deg_R_next = deg_Q - 1;
+            deg_Q_next = deg_R;
+            {reg_R0_next, reg_R1_next, reg_R2_next, reg_R3_next, reg_R4_next} = {wire_P0, wire_P1, wire_P2, wire_P3, wire_P4};
+            {reg_Q0_next, reg_Q1_next, reg_Q2_next, reg_Q3_next, reg_Q4_next} = {reg_R0, reg_R1, reg_R2, reg_R3, reg_R4};
+            {reg_L0_next, reg_L1_next, reg_L2_next, reg_L3_next, reg_L4_next, reg_L5_next} = {wire_L0, wire_L1, wire_L2, wire_L3, wire_L4, wire_L5};
+            {reg_U0_next, reg_U1_next, reg_U2_next, reg_U3_next, reg_U4_next, reg_U5_next} = {reg_L0, reg_L1, reg_L2, reg_L3, reg_L4, reg_L5};
         end else begin
-            deg_R_next <= deg_R - 1;
-            deg_Q_next <= deg_Q;
-            {reg_R0_next, reg_R1_next, reg_R2_next, reg_R3_next, reg_R4_next} <= {wire_P0, wire_P1, wire_P2, wire_P3, wire_P4};
-            {reg_Q0_next, reg_Q1_next, reg_Q2_next, reg_Q3_next, reg_Q4_next} <= {reg_Q0, reg_Q1, reg_Q2, reg_Q3, reg_Q4};
-            {reg_L0_next, reg_L1_next, reg_L2_next, reg_L3_next, reg_L4_next, reg_L5_next} <= {wire_L0, wire_L1, wire_L2, wire_L3, wire_L4, wire_L5};
+            deg_R_next = deg_R - 1;
+            deg_Q_next = deg_Q;
+            {reg_R0_next, reg_R1_next, reg_R2_next, reg_R3_next, reg_R4_next} = {wire_P0, wire_P1, wire_P2, wire_P3, wire_P4};
+            {reg_Q0_next, reg_Q1_next, reg_Q2_next, reg_Q3_next, reg_Q4_next} = {reg_Q0, reg_Q1, reg_Q2, reg_Q3, reg_Q4};
+            {reg_L0_next, reg_L1_next, reg_L2_next, reg_L3_next, reg_L4_next, reg_L5_next} = {wire_L0, wire_L1, wire_L2, wire_L3, wire_L4, wire_L5};
             {reg_U0_next, reg_U1_next, reg_U2_next, reg_U3_next, reg_U4_next, reg_U5_next} <= {reg_U0, reg_U1, reg_U2, reg_U3, reg_U4, reg_U5};
         end
     end
@@ -247,8 +247,8 @@ module s2_kes_dcme0_nostate(
             deg_Q <= `D 8'h00;//3
             {reg_R0, reg_R1, reg_R2, reg_R3, reg_R4} <= `D {8'h00, 8'h00, 8'h00, 8'h00, 8'h00};
             {reg_Q0, reg_Q1, reg_Q2, reg_Q3, reg_Q4} <= `D {8'h00, 8'h00, 8'h00, 8'h00, 8'h00};
-            {reg_L0, reg_L1, reg_L2} <= `D {8'h00, 8'h00, 8'h00};
-            {reg_U0, reg_U1, reg_U2} <= `D {8'h00, 8'h00, 8'h00};
+            {reg_L0, reg_L1, reg_L2, reg_L3, reg_L4, reg_L5} <= `D {8'h00, 8'h00, 8'h00, 8'h00, 8'h00, 8'h00};
+            {reg_U0, reg_U1, reg_U2, reg_U3, reg_U4, reg_U5} <= `D {8'h00, 8'h00, 8'h00, 8'h00, 8'h00, 8'h00};
         end else begin
             deg_R <= `D deg_R_next;
             deg_Q <= `D deg_Q_next;
