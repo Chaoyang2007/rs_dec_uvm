@@ -21,7 +21,7 @@ rs_decoder u_rs_decoder (
 );
 
 initial begin
-   run_test();
+    run_test();
 end
 
 initial begin
@@ -44,5 +44,17 @@ initial begin
             `uvm_fatal("uvm_top", "rstn set error!")
     end
 end
+
+// initial begin
+// 	$set_toggle_region(top.u_rs_decoder);
+//     $display($time, " toggle start");
+// 	$toggle_start();
+// 	run_test();
+// 	$toggle_stop(); 
+//     $display($time, " toggle stop");
+//     $toggle_report("rs_decoder.saif",1.0e-9,"top"); 
+//     $display($time, " toggle report");
+//     $finish;
+// end
 
 endmodule // top

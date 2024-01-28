@@ -17,7 +17,7 @@ class rs_base_test extends uvm_test;
         super.build_phase(phase);
         env  = rs_env::type_id::create("env", this);
         vsqr = rs_vsqr::type_id::create("vsqr", this);
-        uvm_top.set_timeout(600000ns,0);
+        // uvm_top.set_timeout(600000ns,0);
     endfunction // build_phase
 
     // Connect phase to establish connections between components

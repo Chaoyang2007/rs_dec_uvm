@@ -140,7 +140,8 @@ module s2_kes_dcme1(
     wire init;
     wire done;
     wire stop;
-    wire shift;
+    wire shift_Q;
+    wire shift_R;
     wire swap;
     wire kes_in_process;
 

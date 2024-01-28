@@ -173,40 +173,40 @@ module rs_fifo (
     end
 
     //======================== read ram items ========================//
-    wire [11:0] dbg_isos_ram_0  = isos_ram[0];
-    wire [11:0] dbg_isos_ram_1  = isos_ram[1];
-    wire [63:0] dbg_data_ram_0  = data_ram[0];
-    wire [63:0] dbg_data_ram_1  = data_ram[1];
-    wire [63:0] dbg_data_ram_2  = data_ram[2];
-    wire [63:0] dbg_data_ram_3  = data_ram[3];
-    wire [63:0] dbg_data_ram_4  = data_ram[4];
-    wire [63:0] dbg_data_ram_5  = data_ram[5];
-    wire [63:0] dbg_data_ram_6  = data_ram[6];
-    wire [63:0] dbg_data_ram_7  = data_ram[7];
-    wire [63:0] dbg_data_ram_8  = data_ram[8];
-    wire [63:0] dbg_data_ram_9  = data_ram[9];
-    wire [63:0] dbg_data_ram_10 = data_ram[10];
-    wire [63:0] dbg_data_ram_11 = data_ram[11];
-    wire [63:0] dbg_data_ram_12 = data_ram[12];
-    wire [63:0] dbg_data_ram_13 = data_ram[13];
-    wire [63:0] dbg_data_ram_14 = data_ram[14];
-    wire [63:0] dbg_data_ram_15 = data_ram[15];
-    wire [63:0] dbg_data_ram_16 = data_ram[16];
-    wire [63:0] dbg_data_ram_17 = data_ram[17];
-    wire [63:0] dbg_data_ram_18 = data_ram[18];
-    wire [63:0] dbg_data_ram_19 = data_ram[19];
-    wire [63:0] dbg_data_ram_20 = data_ram[20];
-    wire [63:0] dbg_data_ram_21 = data_ram[21];
-    wire [63:0] dbg_data_ram_22 = data_ram[22];
-    wire [63:0] dbg_data_ram_23 = data_ram[23];
-    wire [63:0] dbg_data_ram_24 = data_ram[24];
-    wire [63:0] dbg_data_ram_25 = data_ram[25];
-    wire [63:0] dbg_data_ram_26 = data_ram[26];
-    wire [63:0] dbg_data_ram_27 = data_ram[27];
-    wire [63:0] dbg_data_ram_28 = data_ram[28];
-    wire [63:0] dbg_data_ram_29 = data_ram[29];
-    wire [63:0] dbg_data_ram_30 = data_ram[30];
-    wire [63:0] dbg_data_ram_31 = data_ram[31];
+    // wire [11:0] dbg_isos_ram_0  = isos_ram[0];
+    // wire [11:0] dbg_isos_ram_1  = isos_ram[1];
+    // wire [63:0] dbg_data_ram_0  = data_ram[0];
+    // wire [63:0] dbg_data_ram_1  = data_ram[1];
+    // wire [63:0] dbg_data_ram_2  = data_ram[2];
+    // wire [63:0] dbg_data_ram_3  = data_ram[3];
+    // wire [63:0] dbg_data_ram_4  = data_ram[4];
+    // wire [63:0] dbg_data_ram_5  = data_ram[5];
+    // wire [63:0] dbg_data_ram_6  = data_ram[6];
+    // wire [63:0] dbg_data_ram_7  = data_ram[7];
+    // wire [63:0] dbg_data_ram_8  = data_ram[8];
+    // wire [63:0] dbg_data_ram_9  = data_ram[9];
+    // wire [63:0] dbg_data_ram_10 = data_ram[10];
+    // wire [63:0] dbg_data_ram_11 = data_ram[11];
+    // wire [63:0] dbg_data_ram_12 = data_ram[12];
+    // wire [63:0] dbg_data_ram_13 = data_ram[13];
+    // wire [63:0] dbg_data_ram_14 = data_ram[14];
+    // wire [63:0] dbg_data_ram_15 = data_ram[15];
+    // wire [63:0] dbg_data_ram_16 = data_ram[16];
+    // wire [63:0] dbg_data_ram_17 = data_ram[17];
+    // wire [63:0] dbg_data_ram_18 = data_ram[18];
+    // wire [63:0] dbg_data_ram_19 = data_ram[19];
+    // wire [63:0] dbg_data_ram_20 = data_ram[20];
+    // wire [63:0] dbg_data_ram_21 = data_ram[21];
+    // wire [63:0] dbg_data_ram_22 = data_ram[22];
+    // wire [63:0] dbg_data_ram_23 = data_ram[23];
+    // wire [63:0] dbg_data_ram_24 = data_ram[24];
+    // wire [63:0] dbg_data_ram_25 = data_ram[25];
+    // wire [63:0] dbg_data_ram_26 = data_ram[26];
+    // wire [63:0] dbg_data_ram_27 = data_ram[27];
+    // wire [63:0] dbg_data_ram_28 = data_ram[28];
+    // wire [63:0] dbg_data_ram_29 = data_ram[29];
+    // wire [63:0] dbg_data_ram_30 = data_ram[30];
+    // wire [63:0] dbg_data_ram_31 = data_ram[31];
 
 endmodule
 
