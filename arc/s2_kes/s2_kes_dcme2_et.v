@@ -38,6 +38,14 @@ module s2_kes_dcme2_nostate(
     output reg [7:0] rs_omega1,
     output reg       kes_done
 );
+    localparam S0='b00001;
+    localparam S1='b00010;
+    localparam S2='b00100;
+    localparam S3='b01000;
+    localparam S4='b10000;
+
+    reg [4:0] dcme2_state;
+    reg [4:0] dcme2_state_next;
 
     reg [2:0] deg_R;
     reg [2:0] deg_Q;
@@ -103,7 +111,7 @@ module s2_kes_dcme2_nostate(
     wire [7:0] R5_update;
     wire [7:0] R6_update;
 
-    reg  idle;
+    wire idle;
     wire init;
     wire done;
     wire stop;
@@ -111,20 +119,29 @@ module s2_kes_dcme2_nostate(
     wire swap;
     wire kes_in_process;
 
+    always @(*) begin
+        case (dcme2_state)
+            S0: dcme2_state_next = init ? S1 : S0;
+            S1: dcme2_state_next = S2;
+            S2: dcme2_state_next = S3;
+            S3: dcme2_state_next = stop ? S0 : S4;
+            S4: dcme2_state_next = S0;
+            default: dcme2_state_next = S0;
+        endcase
+    end
+
     always @(posedge clk or negedge rstn) begin
         if(!rstn) begin
-            idle <= `D 'b1;
-        end else if(init) begin
-            idle <= `D 'b0;
-        end else if(done) begin
-            idle <= `D 'b1;
+            dcme2_state <= `D S0;
         end else begin
-            idle <= `D idle;
+            dcme2_state <= `D dcme2_state_next;
         end
     end
 
+    assign idle  = dcme2_state[0];
     assign init  = kes_ena & idle;
-    assign done  = deg_R_next < 'd2; // kes done
+    assign stop  = deg_R < 'd2;
+    assign done  = dcme2_state[4] | stop; // kes done
     assign shift = msb_Q==8'h00; // right shift Q
     assign swap  = msb_R!=8'h00 && deg_R<deg_Q; // swap R Q and calculate
 
@@ -205,11 +222,11 @@ module s2_kes_dcme2_nostate(
             rs_omega0  <= `D 8'h00;
             rs_omega1  <= `D 8'h00;
         end else if(done) begin
-            rs_lambda0 <= `D reg_R2_next;
-            rs_lambda1 <= `D reg_R3_next;
-            rs_lambda2 <= `D reg_R4_next;
-            rs_omega0  <= `D reg_R5_next;
-            rs_omega1  <= `D reg_R6_next;
+            rs_lambda0 <= `D reg_R2;
+            rs_lambda1 <= `D reg_R3;
+            rs_lambda2 <= `D reg_R4;
+            rs_omega0  <= `D reg_R5;
+            rs_omega1  <= `D reg_R6;
         end
     end
 

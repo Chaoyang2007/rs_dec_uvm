@@ -6,7 +6,7 @@
 // Design Name: 
 // Module Name: s2_kes_dcme1
 // Project Name: 
-// Desription: 5 cycles, CQ CR, 
+// Desription: 5 cycles, the naive dcme, refer to medc in matlab
 // dcme1_state remained
 // 
 // Dependencies: 
@@ -93,12 +93,6 @@ module s2_kes_dcme1(
     reg [7:0] reg_U1_next;
     reg [7:0] reg_U2_next;
 
-    reg [2:0] CQ;
-    reg [2:0] CR;
-    reg [2:0] CQ_next;
-    reg [2:0] CR_next;
-
-
     wire [7:0] msb_R;
     wire [7:0] msb_Q;
 
@@ -122,10 +116,6 @@ module s2_kes_dcme1(
     wire [7:0] msb_Q_multi_L1;
     wire [7:0] msb_Q_multi_L2;
 
-    wire [7:0] mux_L0;
-    wire [7:0] mux_L1;
-    wire [7:0] mux_L2;
-
     wire [7:0] wire_P0;
     wire [7:0] wire_P1;
     wire [7:0] wire_P2;
@@ -139,9 +129,8 @@ module s2_kes_dcme1(
     wire idle;
     wire init;
     wire done;
-    wire stop;
-    wire shift_Q;
-    wire shift_R;
+    wire shift_r;
+    wire shift_q;
     wire swap;
     wire kes_in_process;
 
@@ -167,19 +156,14 @@ module s2_kes_dcme1(
     assign idle  = dcme1_state[0];
     assign init  = kes_ena & idle;
     assign done  = dcme1_state[4]; // kes done
-    assign stop  = deg_R < 'd2; // early termination
-    assign shift_Q = msb_Q==8'h00; // right shift Q
-    assign shift_R = msb_R==8'h00; // right shift R
-    assign swap  = CQ == 'd0; // swap R Q and calculate
+    assign shift_r = msb_R==8'h00; // right shift R
+    assign shift_q = msb_Q==8'h00; // right shift Q
+    assign swap  = deg_R<deg_Q; // swap R Q and calculate
 
     assign kes_in_process = init | ~idle;
     
     assign msb_R = reg_R4;
     assign msb_Q = reg_Q4;
-
-    assign mux_L0 = (~swap) ? reg_L0 : (CR==0) ? 8'h00  : (CR==1) ? 8'h00  : 8'h00;
-    assign mux_L1 = (~swap) ? reg_L1 : (CR==0) ? reg_L0 : (CR==1) ? 8'h00  : 8'h00;
-    assign mux_L2 = (~swap) ? reg_L2 : (CR==0) ? reg_L1 : (CR==1) ? reg_L0 : 8'h00;
 
     gf2m8_multi u_gf2m8_multi_aq0 ( .x(msb_R), .y(reg_Q0), .z(msb_R_multi_Q0) );
     gf2m8_multi u_gf2m8_multi_aq1 ( .x(msb_R), .y(reg_Q1), .z(msb_R_multi_Q1) );
@@ -197,9 +181,9 @@ module s2_kes_dcme1(
     gf2m8_multi u_gf2m8_multi_br3 ( .x(msb_Q), .y(reg_R3), .z(msb_Q_multi_R3) );
     gf2m8_multi u_gf2m8_multi_br4 ( .x(msb_Q), .y(reg_R4), .z(msb_Q_multi_R4) );
 
-    gf2m8_multi u_gf2m8_multi_bl0 ( .x(msb_Q), .y(mux_L0), .z(msb_Q_multi_L0) );
-    gf2m8_multi u_gf2m8_multi_bl1 ( .x(msb_Q), .y(mux_L1), .z(msb_Q_multi_L1) );
-    gf2m8_multi u_gf2m8_multi_bl2 ( .x(msb_Q), .y(mux_L2), .z(msb_Q_multi_L2) );
+    gf2m8_multi u_gf2m8_multi_bl0 ( .x(msb_Q), .y(reg_L0), .z(msb_Q_multi_L0) );
+    gf2m8_multi u_gf2m8_multi_bl1 ( .x(msb_Q), .y(reg_L1), .z(msb_Q_multi_L1) );
+    gf2m8_multi u_gf2m8_multi_bl2 ( .x(msb_Q), .y(reg_L2), .z(msb_Q_multi_L2) );
 
     //R = (b·R − a·Q)·x
     assign wire_P0 = 8'h00;
@@ -208,67 +192,45 @@ module s2_kes_dcme1(
     assign wire_P3 = msb_Q_multi_R2 ^ msb_R_multi_Q2;
     assign wire_P4 = msb_Q_multi_R3 ^ msb_R_multi_Q3;
 
-    assign wire_L0 = msb_Q_multi_L0 ^ msb_R_multi_U0;
-    assign wire_L1 = msb_Q_multi_L1 ^ msb_R_multi_U1;
-    assign wire_L2 = msb_Q_multi_L2 ^ msb_R_multi_U2;
+    assign wire_L0 = msb_Q_multi_L2 ^ msb_R_multi_U2;
+    assign wire_L1 = msb_Q_multi_L0 ^ msb_R_multi_U0;
+    assign wire_L2 = msb_Q_multi_L1 ^ msb_R_multi_U1;
 
     always @(*) begin
         if(idle) begin //load
-            CQ_next = 'd2;
-            CR_next = 'd0;
             deg_R_next = 'd4;
             deg_Q_next = 'd3;
             {reg_R0_next, reg_R1_next, reg_R2_next, reg_R3_next, reg_R4_next} = {8'h00, 8'h00, 8'h00, 8'h00, 8'h01};
             {reg_Q0_next, reg_Q1_next, reg_Q2_next, reg_Q3_next, reg_Q4_next} = {8'h00, rs_syn0, rs_syn1, rs_syn2, rs_syn3};
             {reg_L0_next, reg_L1_next, reg_L2_next} = {8'h00, 8'h00, 8'h00};
             {reg_U0_next, reg_U1_next, reg_U2_next} = {8'h00, 8'h01, 8'h00};
-        end else if(!stop) begin
-            if(shift_Q) begin
-                CQ_next = CQ + 1;
-                CR_next = CR;
-                deg_R_next = deg_R;
-                deg_Q_next = deg_Q - 'd1;
-                {reg_R0_next, reg_R1_next, reg_R2_next, reg_R3_next, reg_R4_next} = {reg_R0, reg_R1, reg_R2, reg_R3, reg_R4};
-                {reg_Q0_next, reg_Q1_next, reg_Q2_next, reg_Q3_next, reg_Q4_next} = {8'h00, reg_Q0, reg_Q1, reg_Q2, reg_Q3};
-                {reg_L0_next, reg_L1_next, reg_L2_next} = {reg_L0, reg_L1, reg_L2};
-                {reg_U0_next, reg_U1_next, reg_U2_next} = {8'h00, reg_U0, reg_U1};
-            end else if(shift_R) begin
-                CQ_next = (CQ==0) ? 0 : CQ - 1;
-                CR_next = (CQ==0) ? CR + 1 : CR;
-                deg_R_next = deg_R - 'd1;
-                deg_Q_next = deg_Q;
-                {reg_R0_next, reg_R1_next, reg_R2_next, reg_R3_next, reg_R4_next} = {8'h00, reg_R0, reg_R1, reg_R2, reg_R3};
-                {reg_Q0_next, reg_Q1_next, reg_Q2_next, reg_Q3_next, reg_Q4_next} = {reg_Q0, reg_Q1, reg_Q2, reg_Q3, reg_Q4};
-                {reg_L0_next, reg_L1_next, reg_L2_next} = {reg_L0, reg_L1, reg_L2};
-                {reg_U0_next, reg_U1_next, reg_U2_next} = {reg_U0, reg_U1, reg_U2};
-            end else if(swap) begin
-                CQ_next = CQ + CR + 1;
-                CR_next = 0;
-                deg_R_next = deg_Q - 1;
-                deg_Q_next = deg_R;
-                {reg_R0_next, reg_R1_next, reg_R2_next, reg_R3_next, reg_R4_next} = {wire_P0, wire_P1, wire_P2, wire_P3, wire_P4};
-                {reg_Q0_next, reg_Q1_next, reg_Q2_next, reg_Q3_next, reg_Q4_next} = {reg_R0, reg_R1, reg_R2, reg_R3, reg_R4};
-                {reg_L0_next, reg_L1_next, reg_L2_next} = {wire_L0, wire_L1, wire_L2};
-                {reg_U0_next, reg_U1_next, reg_U2_next} = (CR==2) ? {8'h00, 8'h00, reg_L0}  :
-                                                          (CR==1) ? {8'h00, reg_L0, reg_L1} : {reg_L0, reg_L1, reg_L2};
-            end else begin
-                CQ_next = CQ - 1;
-                CR_next = CR;
-                deg_R_next = deg_R - 1;
-                deg_Q_next = deg_Q;
-                {reg_R0_next, reg_R1_next, reg_R2_next, reg_R3_next, reg_R4_next} = {wire_P0, wire_P1, wire_P2, wire_P3, wire_P4};
-                {reg_Q0_next, reg_Q1_next, reg_Q2_next, reg_Q3_next, reg_Q4_next} = {reg_Q0, reg_Q1, reg_Q2, reg_Q3, reg_Q4};
-                {reg_L0_next, reg_L1_next, reg_L2_next} = {wire_L0, wire_L1, wire_L2};
-                {reg_U0_next, reg_U1_next, reg_U2_next} = (CQ>1) ? {reg_U1, reg_U2, 8'h00} : {reg_U0, reg_U1, reg_U2};
-            end
-        end else begin
-            CQ_next = CQ;
-            CR_next = CR;
-            deg_R_next = deg_R;
+        end else if(shift_r) begin
+            deg_R_next = deg_R - 'd1;
             deg_Q_next = deg_Q;
+            {reg_R0_next, reg_R1_next, reg_R2_next, reg_R3_next, reg_R4_next} = {8'h00, reg_R0, reg_R1, reg_R2, reg_R3};
+            {reg_Q0_next, reg_Q1_next, reg_Q2_next, reg_Q3_next, reg_Q4_next} = {reg_Q0, reg_Q0, reg_Q1, reg_Q2, reg_Q3};
+            {reg_L0_next, reg_L1_next, reg_L2_next} = {reg_L2, reg_L0, reg_L1};
+            {reg_U0_next, reg_U1_next, reg_U2_next} = {reg_U0, reg_U1, reg_U2};
+        end else if(shift_q) begin
+            deg_R_next = deg_R;
+            deg_Q_next = deg_Q - 'd1;
             {reg_R0_next, reg_R1_next, reg_R2_next, reg_R3_next, reg_R4_next} = {reg_R0, reg_R1, reg_R2, reg_R3, reg_R4};
-            {reg_Q0_next, reg_Q1_next, reg_Q2_next, reg_Q3_next, reg_Q4_next} = {reg_Q0, reg_Q1, reg_Q2, reg_Q3, reg_Q4};
+            {reg_Q0_next, reg_Q1_next, reg_Q2_next, reg_Q3_next, reg_Q4_next} = {8'h00, reg_Q0, reg_Q1, reg_Q2, reg_Q3};
             {reg_L0_next, reg_L1_next, reg_L2_next} = {reg_L0, reg_L1, reg_L2};
+            {reg_U0_next, reg_U1_next, reg_U2_next} = {reg_U2, reg_U0, reg_U1};
+        end else if(swap) begin
+            deg_R_next = deg_Q - 1;
+            deg_Q_next = deg_R;
+            {reg_R0_next, reg_R1_next, reg_R2_next, reg_R3_next, reg_R4_next} = {wire_P0, wire_P1, wire_P2, wire_P3, wire_P4};
+            {reg_Q0_next, reg_Q1_next, reg_Q2_next, reg_Q3_next, reg_Q4_next} = {reg_R0, reg_R1, reg_R2, reg_R3, reg_R4};
+            {reg_L0_next, reg_L1_next, reg_L2_next} = {wire_L0, wire_L1, wire_L2};
+            {reg_U0_next, reg_U1_next, reg_U2_next} = {reg_L0, reg_L1, reg_L2};
+        end else begin
+            deg_R_next = deg_R - 1;
+            deg_Q_next = deg_Q;
+            {reg_R0_next, reg_R1_next, reg_R2_next, reg_R3_next, reg_R4_next} = {wire_P0, wire_P1, wire_P2, wire_P3, wire_P4};
+            {reg_Q0_next, reg_Q1_next, reg_Q2_next, reg_Q3_next, reg_Q4_next} = {reg_Q0, reg_Q1, reg_Q2, reg_Q3, reg_Q4};
+            {reg_L0_next, reg_L1_next, reg_L2_next} = {wire_L0, wire_L1, wire_L2};
             {reg_U0_next, reg_U1_next, reg_U2_next} = {reg_U0, reg_U1, reg_U2};
         end
     end
@@ -276,8 +238,6 @@ module s2_kes_dcme1(
     icg u_icg_kes_rq(.clk(clk), .ena(kes_in_process), .rstn(rstn), .gclk(kes_in_process_clk));
     always @(posedge kes_in_process_clk or negedge rstn) begin
         if(!rstn) begin
-            CQ <= `D 'd0;
-            CR <= `D 'd0;
             deg_R <= `D 8'h00;//4
             deg_Q <= `D 8'h00;//3
             {reg_R0, reg_R1, reg_R2, reg_R3, reg_R4} <= `D {8'h00, 8'h00, 8'h00, 8'h00, 8'h00};
@@ -285,8 +245,6 @@ module s2_kes_dcme1(
             {reg_L0, reg_L1, reg_L2} <= `D {8'h00, 8'h00, 8'h00};
             {reg_U0, reg_U1, reg_U2} <= `D {8'h00, 8'h00, 8'h00};
         end else begin
-            CQ <= `D CQ_next;
-            CR <= `D CR_next;
             deg_R <= `D deg_R_next;
             deg_Q <= `D deg_Q_next;
             {reg_R0, reg_R1, reg_R2, reg_R3, reg_R4} <= `D {reg_R0_next, reg_R1_next, reg_R2_next, reg_R3_next, reg_R4_next};
